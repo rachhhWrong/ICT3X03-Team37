@@ -1,0 +1,16 @@
+version: '3.4'
+
+name: "3X03-Team37-debug"
+
+services:
+  web:
+    image: 3x03/web
+    build:
+      context: ..
+      dockerfile: ./containers/web/Dockerfile
+    # For configuration options see https://hub.docker.com/r/tiangolo/meinheld-gunicorn-flask
+    environment:
+      LOG_LEVEL: debug
+    ports:
+    # TODO: use port 443 after setting up TLS
+    - "5000:80"
