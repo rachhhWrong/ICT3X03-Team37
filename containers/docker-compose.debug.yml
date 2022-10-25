@@ -10,7 +10,23 @@ services:
       dockerfile: ./containers/web/Dockerfile
     # For configuration options see https://hub.docker.com/r/tiangolo/meinheld-gunicorn-flask
     environment:
-      LOG_LEVEL: debug
+      - LOG_LEVEL=debug
+      - MONGO_NONROOT_USERNAME
+      - MONGO_NONROOT_PASSWORD
+      - MONGO_INITDB_DATABASE
     ports:
     # TODO: use port 443 after setting up TLS
     - "5000:80"
+  database:
+    image: 3x03/db
+    build:
+      context: ..
+      dockerfile: ./containers/database/Dockerfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_INITDB_DATABASE
+      - MONGO_NONROOT_USERNAME
+      - MONGO_NONROOT_PASSWORD
+    expose:
+      - 27017
