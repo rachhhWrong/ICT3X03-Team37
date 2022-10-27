@@ -23,6 +23,7 @@ stages {
 	steps {
 		echo "deploying the application"
 		sh "sudo nohup python3 main.py> log.txt 2>&1 &"
+		sh 'virtualenv venv && . venv/bin/activate && pip install -r requirements.txt'
 	}
 	}
 }
