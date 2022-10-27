@@ -13,6 +13,7 @@ stages {
 
 	stage('Test') {
 	steps {
+		sh 'virtualenv venv && . venv/bin/activate && pip install -r requirements.txt'
 		sh 'python3 main.py'
 		input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
 	}
