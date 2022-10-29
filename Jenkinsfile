@@ -16,8 +16,7 @@ stages {
             }
 	    }
 	}
-
-	stage('Get Source') {
+    stage('Get Source') {
       // copy source code from local file system and test
       // for a Dockerfile to build the Docker image
       git ('https://github.com/rachhhWrong/ICT3X03-Team37.git')
@@ -25,21 +24,15 @@ stages {
          error('Dockerfile missing.')
       }
    }
-
-   stage('Build Docker') {
+    stage('Build Docker') {
        // build the docker image from the source code using the BUILD_ID parameter in image name
          sh "sudo docker build -t flask-app ."
    }
-
-   stage("run docker container"){
+    stage("run docker container"){
         sh "sudo docker run -p 3000:3000 --name flask-app -d flask-app "
     }
-}
-
-
-
-	stage('Build') {
-	parallel {
+    stage('Build') {
+    parallel {
 		stage('Build') {
 		steps {
 		    sh 'python3 main.py'
@@ -49,9 +42,6 @@ stages {
 		}
 	}
 	}
-
-
-
 	stage('Deploy') {
 	steps {
 		echo "deploying the application"
