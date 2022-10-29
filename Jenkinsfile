@@ -32,10 +32,7 @@ stages {
 	steps {
 		echo "deploying the application"
 	}
-	}
-
-
-    post {
+	post {
 		always {
 			echo 'The pipeline completed'
 			junit allowEmptyResults: true, testResults:'**/test_reports/*.xml'
@@ -48,5 +45,9 @@ stages {
 			error('Stopping early…')
 		}
 	}
+	
+
+
+    
 }
 }
