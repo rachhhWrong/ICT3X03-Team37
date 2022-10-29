@@ -14,7 +14,6 @@ stages {
 		    post {
                 always {junit 'test-reports/*.xml'}
             }
-
 	    }
 	}
 
@@ -26,10 +25,12 @@ stages {
          error('Dockerfile missing.')
       }
    }
+
    stage('Build Docker') {
        // build the docker image from the source code using the BUILD_ID parameter in image name
          sh "sudo docker build -t flask-app ."
    }
+
    stage("run docker container"){
         sh "sudo docker run -p 3000:3000 --name flask-app -d flask-app "
     }
@@ -51,17 +52,14 @@ stages {
 
 
 
-	stage('Deploy')
-	{
+	stage('Deploy') {
 	steps {
 		echo "deploying the application"
-
-		
 	}
 	}
-}
 
-post {
+
+    post {
 		always {
 			echo 'The pipeline completed'
 			junit allowEmptyResults: true, testResults:'**/test_reports/*.xml'
