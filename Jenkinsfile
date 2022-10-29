@@ -5,7 +5,9 @@ stages {
 	parallel {
 		stage('Build') {
 		steps {
-			sh 'echo "building the repo"'
+			sh 'echo "Building the Repo"'
+			sh 'echo "Installing Requirements.txt"'
+			sh 'pip install -r requirements.txt'
 		}
 		}
 	}
@@ -13,10 +15,18 @@ stages {
 
 	stage('Test') {
 	steps {
-		sh 'echo "Testing Phase"'
-		sh 'pip install -r requirements.txt'
-		sh 'python3 main.py'
+	    if (env.BRANCH_NAME == 'Fee') {
+            echo 'Hello from Fee branch'
+            sh 'echo "Testing Phase"'
+		    sh 'python3 main.py'
 		input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
+        } else {
+            sh "echo 'Hello from ${env.BRANCH_NAME} branch!'"
+        }
+
+
+
+
 	}
 	}
 
