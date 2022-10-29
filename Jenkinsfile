@@ -15,17 +15,11 @@ stages {
 
 	stage('Test') {
 	steps {
-	    if (env.BRANCH_NAME == 'Fee') {
-            echo 'Hello from Fee branch'
-            sh 'echo "Testing Phase"'
-		    sh 'python3 main.py'
-		input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
-        } else {
-            sh "echo 'Hello from ${env.BRANCH_NAME} branch!'"
-        }
-
-
-
+	    echo 'Hello from Fee branch'
+        sh 'echo "Testing Phase"'
+		sh 'python3 main.py'
+		input
+        (id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
 
 	}
 	}
