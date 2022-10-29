@@ -18,8 +18,8 @@ stages {
 	    echo 'Hello from Fee branch'
         sh 'echo "Testing Phase"'
 		sh 'python3 main.py'
-		input
-        (id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
+		input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
+
 
 	}
 	}
