@@ -11,9 +11,7 @@ stages {
 		    sh 'echo "Requirements met"'
 		    sh 'python3 test.py'
 		    echo 'test completed'
-		    post {
-                always {junit 'test-reports/*.xml'}
-            }
+		    
 	    }
 	}
    
@@ -23,7 +21,6 @@ stages {
 		steps {
 		    sh 'python3 main.py'
 		    input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
-
 		}
 		}
 	}
