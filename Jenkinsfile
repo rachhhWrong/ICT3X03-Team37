@@ -29,7 +29,7 @@ stages {
          sh "sudo docker build -t flask-app ."
    }
     stage("run docker container"){
-        sh "sudo docker run -p 3000:3000 --name flask-app -d flask-app "
+        sh "sudo docker run -p 3000:3000 --name flask-app -d flask-app"
     }
     stage('Build') {
     parallel {
