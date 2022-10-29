@@ -5,9 +5,9 @@ stages {
 	parallel {
 		stage('Build') {
 		steps {
-			sh 'echo "Building the Repo"'
-			sh 'echo "Installing Requirements.txt"'
-			sh 'pip install -r requirements.txt'
+		    sh 'python3 main.py'
+		    input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
+
 		}
 		}
 	}
@@ -17,9 +17,11 @@ stages {
 	steps {
 	    echo 'Hello from Fee branch'
         sh 'echo "Testing Phase"'
-		sh 'python3 main.py'
-		input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
-
+        sh 'echo "Building the Repo"'
+		sh 'echo "Installing Requirements.txt"'
+		sh 'pip install -r requirements.txt'
+		sh 'python3 test.py'
+		echo 'test completed'
 
 	}
 	}
@@ -28,8 +30,7 @@ stages {
 	{
 	steps {
 		echo "deploying the application"
-		sh 'virtualenv venv && . venv/bin/activate && pip install -r requirements.txt'
-		sh "sudo nohup python3 main.py> log.txt 2>&1 &"
+
 		
 	}
 	}
