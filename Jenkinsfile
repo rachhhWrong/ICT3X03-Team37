@@ -11,9 +11,31 @@ stages {
 		    sh 'echo "Requirements met"'
 		    sh 'python3 test.py'
 		    echo 'test completed'
+		    post {
+                always {junit 'test-reports/*.xml'}
+            }
 
 	    }
 	}
+
+	stage('Get Source') {
+      // copy source code from local file system and test
+      // for a Dockerfile to build the Docker image
+      git ('https://github.com/rachhhWrong/ICT3X03-Team37.git')
+      if (!fileExists("Dockerfile")) {
+         error('Dockerfile missing.')
+      }
+   }
+   stage('Build Docker') {
+       // build the docker image from the source code using the BUILD_ID parameter in image name
+         sh "sudo docker build -t flask-app ."
+   }
+   stage("run docker container"){
+        sh "sudo docker run -p 3000:3000 --name flask-app -d flask-app "
+    }
+}
+
+
 
 	stage('Build') {
 	parallel {
