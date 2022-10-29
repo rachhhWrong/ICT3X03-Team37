@@ -1,31 +1,29 @@
-from flask import Blueprint, render_template, request, flash, jsonify, Flask
-from flask_login import login_required, current_user, UserMixin
-from flask_sqlalchemy import *
-import json
-
-app = Flask(__name__)
-db = SQLAlchemy(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.db'
-app.config['SECRET_KEY'] = "key"
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), nullable=False, unique=True)
-    password = db.Column(db.String(80), nullable=False)
+from flask import render_template, Flask
+from website.models import User
+import pymongo
 
 
-@app.route('/', methods=['GET', 'POST'])
+app = Flask(__name__, template_folder='website/templates',static_folder='website/static')
+
+
+
+@app.route('/')
 def home():
-    return render_template("home.html")
+    return render_template("register.html")
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/')
 def login():
     return render_template("login.html")
 
-@app.route('/regsiter', methods=['GET', 'POST'])
+@app.route('/test/')
+def test():
+    return render_template("test.html")
+
+@app.route('/user/register/', methods=['POST'])
 def register():
-    return render_template("register.html")
+    return User().register()
+
 
 
 if __name__ == '__main__':
-    app.run(debug=True,host="0.0.0.0", port=3000)
+    app.run(debug=True, port=3000)
