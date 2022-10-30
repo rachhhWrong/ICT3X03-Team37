@@ -5,7 +5,9 @@ import pymongo
 
 app = Flask(__name__, template_folder='website/templates',static_folder='website/static')
 
-
+@app.route('/favicon.ico')
+def favicon():
+    app.send_static_file('favicon.ico')
 
 @app.route('/')
 def home():
@@ -31,9 +33,15 @@ def analyst():
 def account():
     return render_template("edit_account_page.html")
 
+
 @app.route('/about-us/')
 def about():
-    return render_template("test.html")
+    return render_template("about.html")
+
+@app.route('/all-goods/')
+def allgoods():
+    return render_template("allgoods.html")
+
 
 @app.route('/user/signup/', methods=['POST'])
 def signup():
