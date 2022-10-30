@@ -9,6 +9,10 @@ app = Flask(__name__, template_folder='website/templates',static_folder='website
 
 @app.route('/')
 def home():
+    return render_template("home.html")
+
+@app.route('/register/')
+def register():
     return render_template("register.html")
 
 @app.route('/login/')
@@ -19,10 +23,18 @@ def login():
 def test():
     return render_template("test.html")
 
-@app.route('/user/register/', methods=['POST'])
-def register():
-    return User().register()
+@app.route('/analyst/')
+def analyst():
+    return render_template("data_analyst_page.html")
 
+@app.route('/account/')
+def account():
+    return render_template("edit_account_page.html")
+
+
+@app.route('/user/signup/', methods=['POST'])
+def signup():
+    return User().signup()
 
 
 if __name__ == '__main__':
