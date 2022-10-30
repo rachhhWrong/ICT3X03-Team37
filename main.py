@@ -31,11 +31,17 @@ def analyst():
 def account():
     return render_template("edit_account_page.html")
 
+@app.route('/about-us/')
+def about():
+    return render_template("test.html")
 
 @app.route('/user/signup/', methods=['POST'])
 def signup():
     return User().signup()
 
+@app.route('/menu/')
+def menu():
+    return render_template("menu.html")
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
