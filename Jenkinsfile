@@ -15,27 +15,11 @@ stages {
 	    }
 	}
 
-	stage('Build Docker') {
-	    steps {
-	        // build the docker image from the source code using the BUILD_ID parameter in image name
-            sh "docker build -t flask-app ."
-            echo 'Build Complete'
-	    }
-
-   }
-   stage("run docker container"){
-        steps {
-            sh "docker run -p 3000:3000 --name flask-app -d flask-app "
-            echo 'Docker running'
-        }
-
-    }
-   
     stage('Build') {
     parallel {
 		stage('Build') {
 		steps {
-		    sh 'python3 main.py'
+		    sh 'python3 test.py'
 		    input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
 		}
 		}
