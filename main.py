@@ -1,4 +1,4 @@
-from flask import render_template, Flask
+from flask import render_template, Flask, request
 from website.models import User
 import pymongo
 
@@ -33,7 +33,10 @@ def about():
 def allgoods():
     return render_template("allgoods.html")
 
-
+@app.route('/good/id=<int:id>', methods=['GET', 'POST'])
+def showgood(id):
+    id = request.args.get('id')
+    return render_template("good.html")
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
