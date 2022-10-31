@@ -1,4 +1,4 @@
-from flask import render_template, Flask, request
+from flask import render_template, Flask
 from website.models import User
 import pymongo
 
@@ -13,13 +13,13 @@ def favicon():
 def home():
     return render_template("home.html")
 
-@app.route('/register/')
-def register():
-    return render_template("register.html")
-
 @app.route('/login/')
 def login():
     return render_template("login.html")
+
+@app.route('/register/')
+def register():
+    return render_template("register.html")
 
 @app.route('/analyst/')
 def analyst():
@@ -36,6 +36,11 @@ def about():
 @app.route('/all-products/')
 def allproducts():
     return render_template("all_products.html")
+
+@app.route('/good/id=<int:id>', methods=['GET', 'POST'])
+def showgood(id):
+    id = request.args.get('id')
+    return render_template("good.html")
 
 @app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
 def showgood(id):
