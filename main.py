@@ -72,12 +72,13 @@ def login():
 
         try:
             user = auth.sign_in_with_email_and_password(email, password)
-            session['user'] = email
+            session['user'] = user['localId']
+            session['email'] = email
             session['logged_in'] = True
             print('logged in')
             get_id = auth.get_account_info(user['idToken'])
-            print(get_id)
-            return redirect(url_for('home'))
+            print('INFO', get_id)
+            return redirect(url_for('allproducts'))
         except:
             flash('Wrong email or password!')
             print("Wrong email or password!")
@@ -118,9 +119,25 @@ def account():
     return render_template("account_page.html")
 
 
-@app.route('/account/edit_account')
+@app.route('/account/edit_account', methods=["GET","POST"])
 def edit_account():
-    email = session['user']
+    user = session['user']
+    email = session['email']
+    if request.method == "POST":
+        firstname = request.form['firstname']
+        lastname = request.form['lastname']
+        mobile = request.form['mobile']
+        address1 = request.form['address1']
+        address2 = request.form['address2']
+        postal = request.form['postal']
+
+        data = {'firstname':firstname,'lasname':lastname,'mobile':mobile,'address1':address1,'address2':address2,'postal':postal}
+        current_user = auth.current_user
+        print(user)
+        db.child("users").child(user).set(data)
+
+        return redirect(url_for('account'))
+
     return render_template("edit_account_page.html", email = email)
 
 

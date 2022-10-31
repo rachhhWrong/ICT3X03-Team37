@@ -51,22 +51,18 @@
                         <h1 class="text-white mb-4 mt-5">Register Now!</h1>
                         <form class="mb-5" name="register_form" method="post" , action="{{ url_for('register') }}">
                             <div class="form-group">
-                                <input type="text" name="username"
-                                       class="form-control bg-transparent border-primary p-4 field" placeholder="Name"
+                                <input type="email" name="email"
+                                       class="form-control bg-transparent border-primary p-4 field" placeholder="Email"
                                        required="required"/>
                             </div>
                             <div class="form-group">
-                                <label style="color:white;">Password must be a string at least 6 characters long</label>
+
                                 <input type="password" name="password"
                                        class="form-control bg-transparent border-primary p-4 field"
                                        placeholder="Password"
                                        required="required"/>
                             </div>
-                            <div class="form-group">
-                                <input type="email" name="email"
-                                       class="form-control bg-transparent border-primary p-4 field" placeholder="Email"
-                                       required="required"/>
-                            </div>
+
                             <p class="error error--hidden"></p>
 
                             <div>
@@ -83,6 +79,7 @@
                                     {% endif %}
                                 {% endwith %}
                             </div>
+                            <label style="color:white;">Password must be a string at least 6 characters long</label>
 
 
                         </form>
