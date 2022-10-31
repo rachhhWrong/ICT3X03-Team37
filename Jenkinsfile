@@ -28,7 +28,7 @@ stages {
 	stage('Deploy') {
 	steps {
 		echo "deploying the application"
-		sh 'python3 main.py'
+		sh 'FLASK_APP=main.py flask run'
 	}
 	post {
 		always {
