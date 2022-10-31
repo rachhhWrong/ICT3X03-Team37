@@ -1,12 +1,25 @@
 from flask import *
-from flask_pymongo import PyMongo
 from website.models import *
 import bcrypt
+import firebase_admin
+#from firebase_admin import auth, credentials
+import pyrebase
 
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
-app.config['MONGO_DBNAME'] = "TISBAKERY"
-app.config['MONGO_URI'] = "mongodb://localhost:27017/account"
-mongo = PyMongo(app)
+#cred = credentials.Certificate('tisbakery-service.json')
+
+fbConfig = {'apiKey': "AIzaSyBPVALZE3ag3wNSK4REMwE0oPWmbIAiT9g",
+  'authDomain': "tisbakery.firebaseapp.com",
+  'projectId': "tisbakery",
+  'storageBucket': "tisbakery.appspot.com",
+  'messagingSenderId': "275241827055",
+  'appId': "1:275241827055:web:2ef12ef5c2ac2aa563b91a",
+  'measurementId': "G-E5XZ79LR6N",
+                  'databaseURL':'https://tisbakery-default-rtdb.asia-southeast1.firebasedatabase.app/'}
+
+fb = pyrebase.initialize_app(fbConfig)
+auth = fb.auth()
+db = fb.database()
 
 
 @app.route('/favicon.ico')
@@ -22,16 +35,20 @@ def home():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        users = mongo.db.users
-        existing_users = users.find_one({"name": request.form['username']})
+        email = request.form['email']
+        password = request.form['password']
+        try:
+            user = auth.create_user_with_email_and_password(email, password)
+            auth.send_email_verification(user["idToken"])
 
-        if existing_users is None:
-            hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
-            users.insert_one({'name': request.form['username'], 'password': hashpass})
-            session['username'] = request.form['username']
+            flash('Registered!')
+            print('registered', )
+            return redirect(url_for('login_page'))
+        except Exception as e:
+            print(e)
+            flash('Invalid Email or Email Exist')
+            return redirect(url_for('register'))
 
-            return redirect(url_for('home'))
-        return "USERNAME IN DATABASE"
 
     return render_template("register.html")
 
@@ -39,30 +56,42 @@ def register():
 @app.route('/login')
 def login_page():
     if 'username' in session:
-        #print("Logged in as: " + session['username'])
+        # print("Logged in as: " + session['username'])
         return render_template("login.html")
     else:
         return render_template("login.html")
 
 
-@app.route('/submit', methods=['POST'])
+@app.route('/submit', methods=['POST', 'GET'])
 def login():
-    users = mongo.db.users
-    login_user = users.find_one({'name': request.form['username']})
-    print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
+    if ('user' in session):
+        print("INSESSION", session['user'])
+    if request.method == "POST":
+        email = request.form['email']
+        password = request.form['password']
 
-    if login_user:
-        if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
-            session['username'] = request.args.get('username')
-            print(session['username'])
+        try:
+            user = auth.sign_in_with_email_and_password(email, password)
+            session['user'] = email
+            session['logged_in'] = True
+            print('logged in')
+            get_id = auth.get_account_info(user['idToken'])
+            print(get_id)
             return redirect(url_for('home'))
-    return "INVALID"
+        except:
+            flash('Wrong email or password!')
+            print("Wrong email or password!")
+            return redirect(url_for('login_page'))
 
 
-@app.route('/logout', methods=['GET', 'POST'])
+
+
+
+@app.route('/logout')
 def logout():
-    session.pop('username', None)
-    print(session['username'])
+    session['logged_in'] = False
+    session.pop('user')
+    print('OUTSESSION')
     return redirect('/')
 
 
@@ -91,7 +120,8 @@ def account():
 
 @app.route('/account/edit_account')
 def edit_account():
-    return render_template("edit_account_page.html")
+    email = session['user']
+    return render_template("edit_account_page.html", email = email)
 
 
 @app.route('/checkout/')
@@ -115,9 +145,9 @@ def showgood(id):
     return render_template("indiv_product.html")
 
 
-@app.route('/menu/')
-def menu():
-    return render_template("menu.html")
+@app.route('/cart/')
+def cart():
+    return render_template("cart.html")
 
 
 if __name__ == '__main__':
