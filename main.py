@@ -37,6 +37,10 @@ def account():
 def edit_account():
     return render_template("edit_account_page.html")
 
+@app.route('/checkout/')
+def checkout():
+    return render_template("checkout.html")
+
 @app.route('/about-us/')
 def about():
     return render_template("about.html")
