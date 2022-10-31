@@ -31,8 +31,11 @@ def analyst():
 
 @app.route('/account/')
 def account():
-    return render_template("edit_account_page.html")
+    return render_template("account_page.html")
 
+@app.route('/account/edit_account')
+def edit_account():
+    return render_template("edit_account_page.html")
 
 @app.route('/about-us/')
 def about():
@@ -41,7 +44,6 @@ def about():
 @app.route('/all-goods/')
 def allgoods():
     return render_template("allgoods.html")
-
 
 @app.route('/user/signup/', methods=['POST'])
 def signup():
