@@ -45,6 +45,10 @@ def checkout():
 def about():
     return render_template("about.html")
 
+@app.route('/cart/')
+def cart():
+    return render_template("cart.html")
+
 @app.route('/all-products/')
 def allproducts():
     return render_template("all_products.html")
