@@ -1,9 +1,12 @@
 from flask import render_template, Flask, request
 from website.models import User
-import pymongo
-
+import firebase_admin
+from firebase_admin import *
 
 app = Flask(__name__, template_folder='website/templates',static_folder='website/static')
+
+creds = credentials.Certificate('tis')
+
 
 @app.route('/favicon.ico')
 def favicon():
