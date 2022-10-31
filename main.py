@@ -13,30 +13,39 @@ def favicon():
 def home():
     return render_template("home.html")
 
-@app.route('/login/')
-def login():
-    return render_template("login.html")
-
 @app.route('/register/')
 def register():
     return render_template("register.html")
 
-@app.route('/user/register/', methods=['POST'])
-def registerUser():
-    return User().register()
+@app.route('/login/')
+def login():
+    return render_template("login.html")
+
+@app.route('/analyst/')
+def analyst():
+    return render_template("data_analyst_page.html")
+
+@app.route('/account/')
+def account():
+    return render_template("edit_account_page.html")
 
 @app.route('/about-us/')
 def about():
     return render_template("about.html")
 
-@app.route('/all-goods/')
-def allgoods():
-    return render_template("allgoods.html")
+@app.route('/all-products/')
+def allproducts():
+    return render_template("all_products.html")
 
-@app.route('/good/id=<int:id>', methods=['GET', 'POST'])
+@app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
 def showgood(id):
     id = request.args.get('id')
-    return render_template("good.html")
+    return render_template("indiv_product.html")
+
+@app.route('/user/signup/', methods=['POST'])
+def signup():
+    return User().signup()
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)

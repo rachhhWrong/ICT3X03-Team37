@@ -5,7 +5,7 @@ import uuid
 
 class User:
 
-    def register(self):
+    def signup(self):
         print(request.form)
         user = {
             "_id": uuid.uuid4().hex,
