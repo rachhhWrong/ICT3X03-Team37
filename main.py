@@ -1,4 +1,4 @@
-from flask import render_template, Flask
+from flask import render_template, Flask, request
 from website.models import User
 import pymongo
 
@@ -21,10 +21,6 @@ def register():
 def login():
     return render_template("login.html")
 
-@app.route('/test/')
-def test():
-    return render_template("test.html")
-
 @app.route('/analyst/')
 def analyst():
     return render_template("data_analyst_page.html")
@@ -33,23 +29,23 @@ def analyst():
 def account():
     return render_template("edit_account_page.html")
 
-
 @app.route('/about-us/')
 def about():
     return render_template("about.html")
 
-@app.route('/all-goods/')
-def allgoods():
-    return render_template("allgoods.html")
+@app.route('/all-products/')
+def allproducts():
+    return render_template("all_products.html")
 
+@app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
+def showgood(id):
+    id = request.args.get('id')
+    return render_template("indiv_product.html")
 
 @app.route('/user/signup/', methods=['POST'])
 def signup():
     return User().signup()
 
-@app.route('/menu/')
-def menu():
-    return render_template("menu.html")
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
