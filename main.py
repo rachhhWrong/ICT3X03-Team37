@@ -5,7 +5,8 @@ from firebase_admin import *
 
 app = Flask(__name__, template_folder='website/templates',static_folder='website/static')
 
-creds = credentials.Certificate('tis')
+creds = credentials.Certificate('tisbakery-service.json')
+firebase_admin.initialize_app(creds)
 
 
 @app.route('/favicon.ico')
