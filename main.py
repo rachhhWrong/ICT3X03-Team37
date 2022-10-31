@@ -13,13 +13,17 @@ def favicon():
 def home():
     return render_template("home.html")
 
+@app.route('/register/')
+def register():
+    return render_template("register.html")
+
 @app.route('/login/')
 def login():
     return render_template("login.html")
 
-@app.route('/register/')
-def register():
-    return render_template("register.html")
+@app.route('/test/')
+def test():
+    return render_template("test.html")
 
 @app.route('/analyst/')
 def analyst():
@@ -27,7 +31,15 @@ def analyst():
 
 @app.route('/account/')
 def account():
+    return render_template("account_page.html")
+
+@app.route('/account/edit_account')
+def edit_account():
     return render_template("edit_account_page.html")
+
+@app.route('/checkout/')
+def checkout():
+    return render_template("checkout.html")
 
 @app.route('/about-us/')
 def about():
@@ -47,6 +59,9 @@ def showgood(id):
 def signup():
     return User().signup()
 
+@app.route('/menu/')
+def menu():
+    return render_template("menu.html")
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
