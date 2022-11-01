@@ -17,7 +17,7 @@ stages {
 		    sh 'echo "Requirements met"'
 		    //sh 'python3 test.py'
 		    echo 'test completed'
-		    sh ' docker info | grep -i proxy'
+
 		    
 	    }
 	}
