@@ -14,13 +14,14 @@ stages {
             sh 'echo "Building the Repo"'
 		    sh 'echo "Installing Requirements.txt"'
 		    sh 'pip install -r requirements.txt'
-		    sh 'echo "Requirements met"'
+		    echo "Requirements met"
 		    //sh 'python3 test.py'
 
 		    sh 'docker info'
+		    echo "docker ver"
 		    sh 'docker version'
+		    echo "docker comp ver"
 		    sh 'docker compose version'
-		    sh 'curl --version'
 
 		    echo 'test completed'
 
