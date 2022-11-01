@@ -18,7 +18,7 @@ stages {
             echo "Getting Docker Information"
 		    sh 'docker info'
 		    sh 'docker version'
-		    sh 'docker compose version"
+		    sh 'docker compose version'
 		    
 	    }
 	}
