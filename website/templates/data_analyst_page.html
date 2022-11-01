@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Analytics</title>
+
+    {% include 'links.html' %}
+</head>
+<body>
+{% include 'navbar.html' %}
+<br><br><br><br><br><br>
+<blockquote class="blockquote text-center">
+    <h1 class="align-self-xl-center">Data Analytics</h1>
+</blockquote>
+
+
+<ul class="nav nav-tabs">
+  <li class="active"><button type="button" class="btn btn-info" data-toggle="tab" href="#customer-orders">Customer Orders</button></li>
+  <li><button type="button" class="btn btn-info" data-toggle="tab" href="#logs">Logs</button></li>
+</ul>
+
+<div class="tab-content">
+  <div id="customer-orders" class="tab-pane fade in active">
+    <h3>Customer Orders</h3>
+    <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Customer Name</th>
+      <th scope="col">Order</th>
+      <th scope="col">Order Number</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>Danial</td>
+      <td>cookies</td>
+      <td>123412341234</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>The Cooler Danial</td>
+      <td>cool cookies</td>
+      <td>123412341234</td>
+    </tr>
+  </tbody>
+</table>
+  </div>
+  <div id="logs" class="tab-pane fade">
+    <h3>Logs</h3>
+    <p>logslogslogslogslogslogslogsologs</p>
+  </div>
+</div>
+
+   {% include 'footer.html' %}
+
+</body>
+</html>
+

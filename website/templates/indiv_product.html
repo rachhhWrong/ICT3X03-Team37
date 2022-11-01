@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>TIS Bakery</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Free Website Template" name="keywords">
+    <meta content="Free Website Template" name="description">
+
+    {%  include 'links.html' %}
+</head>
+
+<body>
+    <div>{% include 'navbar.html' %}</div>
+    
+        <!-- Page Header Start -->
+    <div class="container-fluid page-header mb-5 position-relative overlay-bottom">
+        <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
+            <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">Bread, Pastries, Cakes</h1>
+        </div>
+    </div>
+
+<!-- Home Start -->
+<div class="container-fluid py-5">
+    <div class="container">
+        <div class="reservation position-relative overlay-top overlay-bottom">
+            <div class="row align-items-center">
+                <div class="col-lg-6 my-5 my-lg-0">
+                    <div class="p-5">
+                        <img class="img-fluid" src="../static/img/still-life-delicious-pastry.jpg" alt="">            
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    
+                    <div class="text-center p-5" style="background: rgba(51, 33, 29, .8);">
+                        <div class="mb-4">
+                            <h1 class="text-white">Bread 1</h1>
+                    </div>
+                        <p class="text-white">Sprinkled over a chewy roll, the Himalayan pink salt leaves no salty aftertaste, but joy in every bite.
+                        </p>
+
+                        <form class="mb-5" name="register_form">
+                            <div class="form-group">
+                                <input type="quantity" name="quantity" class="form-control bg-transparent border-primary p-4 field" placeholder="Quantity"
+                                    required="required" />
+                            </div>
+                            <p class="error error--hidden"></p>
+                            <div>
+                                <button class="btn btn-primary btn-block font-weight-bold py-3" type="submit">Add to Cart</button>
+                                <!--<input type="submit" value="Register" class="btn"> -->
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Home End -->
+
+    {% include 'footer.html' %}
+
+</body>
+
+</html>

@@ -1,3 +1,9 @@
-from flask import Blueprint
+from flask import Flask
+from pymongo import MongoClient
+#from main import app
 
-auth = Blueprint('auth', __name__)
+# Database
+#app.config['SECRET_KEY'] = 'testing'
+client = MongoClient()
+account_db = client["account"]
+product_db = client["product"]
