@@ -19,6 +19,7 @@ stages {
 		    sh 'docker info'
 		    sh 'docker version'
 		    sh 'docker compose version'
+
 		    
 	    }
 	}
