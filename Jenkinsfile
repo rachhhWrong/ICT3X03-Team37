@@ -27,7 +27,7 @@ stages {
 		stage('Build') {
 		steps {
 		echo 'test'
-		sh 'docker-compose ${environment.COMPOSE_FILE} build'
+		sh 'docker-compose ${COMPOSE_FILE} build'
 
 		    //sh 'python3 test.py'
 		    //sh 'docker-compose -f docker-compose.debug.yaml up --build'
@@ -36,6 +36,22 @@ stages {
 		}
 	}
 	}
+
+	stages {
+    stage('OWASP DependencyCheck') {
+      steps {
+        dependencyCheck additionalArguments: '--format HTML --format XML', odcInstallation: 'NAME'
+      }
+    }
+  }
+  post {
+    success {
+      dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+    }
+  }
+
+
+
 	stage('Deploy') {
 	steps {
 		echo "deploying the application"
