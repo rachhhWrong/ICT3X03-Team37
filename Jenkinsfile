@@ -17,11 +17,9 @@ stages {
 		    sh 'pip install -r requirements.txt'
 		    echo "Requirements met"
 		    //sh 'python3 test.py'
-
+             echo "Getting Docker Information"
 		    sh 'docker info'
-		    echo "docker ver"
 		    sh 'docker version'
-		    echo "docker comp ver"
 		    sh 'docker compose version'
 
 		    echo 'test completed'
@@ -35,9 +33,7 @@ stages {
 		stage('Build') {
 		steps {
 		echo 'test'
-		//sh 'docker compose -f ${COMPOSE_FILE} build'
-		sh 'docker.build("3x03/web")'
-
+		sh 'docker compose -f ${COMPOSE_FILE} build'
 
 
 		    //sh 'docker-compose -f docker-compose.debug.yaml up --build'
