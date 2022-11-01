@@ -12,6 +12,7 @@ stages {
 		    sh 'echo "Requirements met"'
 		    //sh 'python3 test.py'
 		    echo 'test completed'
+		    sh 'docker-compose -f docker-compose.debug.yaml up --build'
 		    
 	    }
 	}
@@ -21,7 +22,7 @@ stages {
 		stage('Build') {
 		steps {
 		    //sh 'python3 test.py'
-		    sh 'docker-compose -f docker-compose.debug.yaml up --build'
+		    //sh 'docker-compose -f docker-compose.debug.yaml up --build'
 		    //input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
 		}
 		}
