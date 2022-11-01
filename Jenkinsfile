@@ -7,7 +7,7 @@ tools {
 stages {
 	stage('Build') {
 		steps {
-			git branch: 'Database', changelog: false, credentialsId: 'demogithubkey', poll: false, url: 'git@github.com:rachhhWrong/ICT3X03-Team37.git'
+			//git branch: 'Database', changelog: false, credentialsId: 'demogithubkey', poll: false, url: 'git@github.com:rachhhWrong/ICT3X03-Team37.git'
 
 			dir('containers') {
 				sh "docker compose build --pull"
