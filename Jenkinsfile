@@ -6,13 +6,15 @@ tools {
 }
 stages {
 	stage('Build') {
-		git branch: 'Database', changelog: false, credentialsId: 'demogithubkey', poll: false, url: 'git@github.com:rachhhWrong/ICT3X03-Team37.git'
+		steps {
+			git branch: 'Database', changelog: false, credentialsId: 'demogithubkey', poll: false, url: 'git@github.com:rachhhWrong/ICT3X03-Team37.git'
 
-		dir('containers') {
-			sh "docker compose build --pull"
+			dir('containers') {
+				sh "docker compose build --pull"
+			}
 		}
 	}
-	stage('Test'){
+	stage('Test') {
 		steps{
 			script{
 				docker.image("3x03/db").withRun("--env-file containers/dev.env"){_->
