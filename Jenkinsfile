@@ -67,6 +67,11 @@ stages {
 		}
 		success {
 			echo "Flask Application Up and running!!"
+			sleep 10
+			echo "Shutting down compose to save resources"
+			dir('containers') {
+				sh "docker compose down"
+			}
 		}
 		failure {
 			echo 'Build stage failed'
