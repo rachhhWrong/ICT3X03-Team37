@@ -37,7 +37,6 @@ stages {
 	}
 	}
 
-	stages {
     stage('OWASP DependencyCheck') {
       steps {
         dependencyCheck additionalArguments: '--format HTML --format XML', odcInstallation: 'NAME'
@@ -49,7 +48,6 @@ stages {
       dependencyCheckPublisher pattern: 'dependency-check-report.xml'
     }
   }
-
 
 
 	stage('Deploy') {
