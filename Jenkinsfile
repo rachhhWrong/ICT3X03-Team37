@@ -49,7 +49,7 @@ stages {
 	steps {
 		echo "deploying the application"
 		//sh 'FLASK_APP=main.py flask run'
-		sh './deploy.sh'
+
 	}
 	post {
 		always {
