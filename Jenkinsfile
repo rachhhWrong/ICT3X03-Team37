@@ -27,7 +27,7 @@ stages {
 		stage('Build') {
 		steps {
 		echo 'test'
-		sh 'docker-compose ${COMPOSE_FILE} build'
+		sh 'docker-compose -f ${COMPOSE_FILE} build'
 
 		    //sh 'python3 test.py'
 		    //sh 'docker-compose -f docker-compose.debug.yaml up --build'
