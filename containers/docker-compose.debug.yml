@@ -18,7 +18,7 @@ services:
       # - MONGO_INITDB_DATABASE
     ports:
     # TODO: use port 443 after setting up TLS
-    - "3000:80"
+    - "3000:443"
   database:
     image: 3x03/db
     build:
