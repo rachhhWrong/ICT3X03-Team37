@@ -35,7 +35,9 @@ stages {
 		stage('Build') {
 		steps {
 		echo 'test'
-		sh 'docker compose -f ${COMPOSE_FILE} build'
+		//sh 'docker compose -f ${COMPOSE_FILE} build'
+		docker.build('3x03/web')
+
 
 
 		    //sh 'docker-compose -f docker-compose.debug.yaml up --build'
@@ -51,6 +53,7 @@ stages {
 	steps {
 		echo "deploying the application"
 		//sh 'FLASK_APP=main.py flask run'
+		sh './deploy.sh'
 	}
 	post {
 		always {
