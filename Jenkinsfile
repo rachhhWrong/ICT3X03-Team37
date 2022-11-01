@@ -4,6 +4,7 @@ agent any
 
 environment {
     COMPOSE_FILE = 'containers/docker-compose.debug.yml'
+
   }
 stages {
     stage('Test') {
@@ -16,7 +17,7 @@ stages {
 		    sh 'echo "Requirements met"'
 		    //sh 'python3 test.py'
 		    echo 'test completed'
-		    sh ''
+		    sh ' docker info | grep -i proxy'
 		    
 	    }
 	}
