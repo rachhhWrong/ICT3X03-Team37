@@ -33,7 +33,7 @@ stages {
 		stage('Build') {
 		steps {
 		echo 'test'
-		sh 'docker compose -d -f ${COMPOSE_FILE} build'
+		sh 'docker compose -f ${COMPOSE_FILE} detach build'
 
 
 		    //sh 'docker-compose -f docker-compose.debug.yaml up --build'
