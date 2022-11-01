@@ -1,6 +1,10 @@
 #!/bin/bash
 pipeline {
 agent any
+
+environment {
+    COMPOSE_FILE = 'containers/docker-compose.debug.yml'
+  }
 stages {
     stage('Test') {
 	    steps {
@@ -12,7 +16,7 @@ stages {
 		    sh 'echo "Requirements met"'
 		    //sh 'python3 test.py'
 		    echo 'test completed'
-		    sh 'docker-compose -f docker-compose.debug.yaml up --build'
+		    sh 'docker-compose build --pull --parallel'
 		    
 	    }
 	}
@@ -22,6 +26,7 @@ stages {
 		stage('Build') {
 		steps {
 		echo 'test'
+
 		    //sh 'python3 test.py'
 		    //sh 'docker-compose -f docker-compose.debug.yaml up --build'
 		    //input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
