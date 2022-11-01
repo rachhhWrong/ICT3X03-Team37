@@ -1,14 +1,12 @@
-#!/bin/bash
 pipeline {
 agent any
-
-environment {
-    COMPOSE_FILE = 'containers/docker-compose.debug.yml'
-    DOCKER_FILE = 'containers/web/Dockerfile'
-
-  }
+tools {
+	// docker credentials
+	'org.jenkinsci.plugins.docker.commons.tools.DockerTool' 'default'
+}
 stages {
-    stage('Test') {
+    
+    stage('Check Requirements & Dump Docker info') {
 	    steps {
 	        echo 'Hello from Dev branch'
             sh 'echo "Testing Phase"'
@@ -16,41 +14,54 @@ stages {
 		    sh 'echo "Installing Requirements.txt"'
 		    sh 'pip install -r requirements.txt'
 		    echo "Requirements met"
-		    //sh 'python3 test.py'
-             echo "Getting Docker Information"
+		   
+            echo "Getting Docker Information"
 		    sh 'docker info'
 		    sh 'docker version'
 		    sh 'docker compose version'
 
-		    echo 'test completed'
 
 		    
 	    }
 	}
-
-    stage('Build') {
-    parallel {
-		stage('Build') {
+    
+    
+    
+    
+    
+	stage('Build Docker Compose') {
 		steps {
-		echo 'test'
-		//sh 'docker compose -f ${COMPOSE_FILE} detach build'
-		sh 'docker compose -f ${COMPOSE_FILE} up --build -d'
+			//git branch: 'Database', changelog: false, credentialsId: 'demogithubkey', poll: false, url: 'git@github.com:rachhhWrong/ICT3X03-Team37.git'
 
-
-		    //sh 'docker-compose -f docker-compose.debug.yaml up --build'
-		    //input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
-		}
+			dir('containers') {
+				sh "docker compose build --pull"
+			}
 		}
 	}
+	stage('Test') {
+		steps{
+			script{
+				docker.image("3x03/db").withRun("--env-file containers/dev.env"){_->
+					docker.image("3x03/web").withRun("--env-file containers/dev.env","sleep infinity"){c->
+						sh "docker cp test.py ${c.id}:/app/test.py"
+						sh "docker exec -t ${c.id} python test.py"
+					}
+				}
+			}
+		}
 	}
-
-
-
+    
 	stage('Deploy') {
 	steps {
-		echo "deploying the application"
-		//sh 'FLASK_APP=main.py flask run'
-
+		echo "Deploying the Application"
+		
+		withCredentials([usernamePassword(credentialsId: 'd72d3cc9-af19-4e0e-a8a3-9b83d2526e3e', passwordVariable: 'MONGO_INITDB_ROOT_PASSWORD', usernameVariable: 'MONGO_INITDB_ROOT_USERNAME')]) {
+			withCredentials([usernamePassword(credentialsId: '5d318559-a4f3-4586-acd5-504d409403e5', passwordVariable: 'MONGO_NONROOT_PASSWORD', usernameVariable: 'MONGO_NONROOT_USERNAME')]) {
+				dir('containers') {
+					sh "docker compose up -d"
+				}
+			}
+		}
 	}
 	post {
 		always {
@@ -59,6 +70,11 @@ stages {
 		}
 		success {
 			echo "Flask Application Up and running!!"
+			sleep 10
+			echo "Shutting down compose to save resources"
+			dir('containers') {
+				sh "docker compose down"
+			}
 		}
 		failure {
 			echo 'Build stage failed'
