@@ -36,7 +36,7 @@ stages {
 		steps {
 		echo 'test'
 		//sh 'docker compose -f ${COMPOSE_FILE} build'
-		sh "docker.build('3x03/web')"
+		sh 'docker.build("3x03/web")'
 
 
 
