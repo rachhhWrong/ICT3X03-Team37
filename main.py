@@ -1,12 +1,14 @@
 from flask import *
 from flask_pymongo import PyMongo
+from website import auth
 from website.models import *
 import bcrypt
 
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
-app.config['MONGO_DBNAME'] = "TISBAKERY"
-app.config['MONGO_URI'] = "mongodb://localhost:27017/account"
-mongo = PyMongo(app)
+# app.config['MONGO_DBNAME'] = "TISBAKERY"
+# app.config['MONGO_URI'] = "mongodb://localhost:27017/account"
+# mongo = PyMongo(app)
+mongo = auth.start_mongo_client(app)
 
 
 @app.route('/favicon.ico')
@@ -123,3 +125,10 @@ def menu():
 if __name__ == '__main__':
     app.secret_key = 'secret'
     app.run(debug=True, port=3000)
+else:
+    from random import SystemRandom
+    import string
+    app.secret_key = ''.join(
+        SystemRandom().choice(string.ascii_letters + string.digits)\
+            for _ in range(32)
+    )
