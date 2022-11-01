@@ -16,8 +16,13 @@ stages {
 		    sh 'pip install -r requirements.txt'
 		    sh 'echo "Requirements met"'
 		    //sh 'python3 test.py'
-		    echo 'test completed'
+
+		    sh 'docker info'
 		    sh 'docker version'
+		    sh 'docker compose version'
+		    sh 'curl --version'
+
+		    echo 'test completed'
 
 		    
 	    }
