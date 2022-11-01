@@ -2,6 +2,9 @@ version: '3.4'
 
 name: "3X03-Team37-debug"
 
+volumes:
+  mongo-data:
+
 services:
   web:
     image: 3x03/web
@@ -24,6 +27,8 @@ services:
     build:
       context: ..
       dockerfile: ./containers/database/Dockerfile
+    volumes:
+      - mongo-data:/data/db:rw
     env_file:
       - dev.env
     # environment:
