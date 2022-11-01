@@ -9,7 +9,7 @@ stages {
 		    sh 'echo "Installing Requirements.txt"'
 		    sh 'pip install -r requirements.txt'
 		    sh 'echo "Requirements met"'
-		    sh 'python3 test.py'
+		    //sh 'python3 test.py'
 		    echo 'test completed'
 		    
 	    }
@@ -29,7 +29,7 @@ stages {
 	stage('Deploy') {
 	steps {
 		echo "deploying the application"
-		sh 'FLASK_APP=main.py flask run'
+		//sh 'FLASK_APP=main.py flask run'
 	}
 	post {
 		always {
