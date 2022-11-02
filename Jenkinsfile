@@ -53,7 +53,7 @@ stages {
 		steps{
 			script{
 				docker.image("3x03/db").withRun("--env-file containers/dev.env"){_->
-					docker.image("3x03/web").withRun("--env-file containers/",){c->
+					docker.image("3x03/web").withRun("--env-file containers/dev.env",){c->
 						sh "docker cp test.py ${c.id}:/app/test.py"
 						sh "docker exec -t ${c.id} python test.py"
 					}
@@ -68,7 +68,7 @@ stages {
 		withCredentials([usernamePassword(credentialsId: 'd72d3cc9-af19-4e0e-a8a3-9b83d2526e3e', passwordVariable: 'MONGO_INITDB_ROOT_PASSWORD', usernameVariable: 'MONGO_INITDB_ROOT_USERNAME')]) {
 			withCredentials([usernamePassword(credentialsId: '5d318559-a4f3-4586-acd5-504d409403e5', passwordVariable: 'MONGO_NONROOT_PASSWORD', usernameVariable: 'MONGO_NONROOT_USERNAME')]) {
 				dir('containers') {
-					sh "docker compose up -d"
+					sh "docker compose up "
 				}
 			}
 		}
