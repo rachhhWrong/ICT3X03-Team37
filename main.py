@@ -44,11 +44,14 @@ def register():
 
     return render_template("register.html")
 
+@app.route('/analyst_login')
+def analyst_login():
+    return render_template("analyst_login.html")
 
 @app.route('/login')
 def login_page():
     if 'username' in session:
-        # print("Logged in as: " + session['username'])
+        #print("Logged in as: " + session['username'])
         return render_template("login.html")
     else:
         return render_template("login.html")
@@ -57,26 +60,29 @@ def login_page():
 @app.route('/submit', methods=['POST'])
 def login():
     users = mongo.db.users
-    login_user = users.find_one({'name': request.form['username']})
+    login_user = users.find_one({'email': request.form['email']})
+    #print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
+    #pseudocode dont erase
+    # analyst = mongo.db.analyst
+    # analyst_user = analyst.find_one({'name': request.form['username']})
 
-    try:
-        if login_user:
-            if bcrypt.hashpw(request.form['password'].encode('utf-8'), login_user['password']) == login_user['password']:
-                session['username'] = request.form['username']
-                # print(session['username'])
-                return redirect(url_for('allproducts'))
-    except:
-        flash('Wrong email or password!')
-        print("Wrong email or password!")
-        return redirect(url_for('login_page'))
-
-    return render_template("login.html")
+    if login_user:
+        if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
+            session['username'] = login_user['name']
+            #print(session['username'])
+            return redirect(url_for('home'))
+    #pseudocode dont erase
+    # if analyst_user:
+    #     if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
+    #         session['username'] = request.form['username']
+    #         return redirect(url_for('analyst'))
+    return "INVALID"
 
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('username', None)
-    # print(session['username'])
+    #print(session['username'])
     return redirect('/')
 
 
@@ -145,8 +151,7 @@ if __name__ == '__main__':
 else:
     from random import SystemRandom
     import string
-
     app.secret_key = ''.join(
-        SystemRandom().choice(string.ascii_letters + string.digits) \
-        for _ in range(32)
+        SystemRandom().choice(string.ascii_letters + string.digits)\
+            for _ in range(32)
     )
