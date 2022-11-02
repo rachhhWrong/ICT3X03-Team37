@@ -80,7 +80,18 @@ stages {
 		}
 		success {
 			echo "Flask Application Up and running!!"
+			
 			sleep 10
+			echo "Checking if containers are still running"
+			RUN_STATUS = sh (
+				script: "docker inspect --format='{{.State.Running}}' 3x03-team37-web-1",
+				returnStdout: true
+			).trim()
+			if (RUN_STATUS == "false") {
+				sh "docker logs --tail 50 3x03-team37-web-1"
+				error('Docker container error was detected')
+			}
+			
 			echo "Shutting down compose to save resources"
 			dir('containers') {
 				//sh "docker compose down"
