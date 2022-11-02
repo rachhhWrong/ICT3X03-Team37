@@ -2,6 +2,7 @@ from flask import *
 from flask_pymongo import PyMongo
 from website import auth
 from website.models import *
+import os
 import bcrypt
 
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
@@ -18,6 +19,7 @@ def favicon():
 
 @app.route('/')
 def home():
+    session.get('username')
     return render_template("home.html")
 
 
@@ -51,12 +53,12 @@ def login_page():
 def login():
     users = mongo.db.users
     login_user = users.find_one({'name': request.form['username']})
-    print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
+    #print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
 
     if login_user:
         if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
-            session['username'] = request.args.get('username')
-            print(session['username'])
+            session['username'] = request.form['username']
+            #print(session['username'])
             return redirect(url_for('home'))
     return "INVALID"
 
@@ -64,14 +66,14 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('username', None)
-    print(session['username'])
+    #print(session['username'])
     return redirect('/')
 
 
 @app.route('/navbar')
 def nav_logout():
     if 'username' in session:
-        username = session['email']
+        username = session['username']
         return 'Logged in as ' + username + '<br>' + "<b><a href = '/logout'>click here to logout</a></b>"
     return "You are not logged in <br><a href = '/login'></b>" + "click here to login</b></a>"
 
