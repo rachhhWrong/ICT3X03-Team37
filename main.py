@@ -28,14 +28,19 @@ def register():
     if request.method == 'POST':
         users = mongo.db.users
         existing_users = users.find_one({"name": request.form['username']})
+        try:
+            if existing_users is None:
+                hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
+                users.insert_one({'name': request.form['username'], 'password': hashpass})
+                session['username'] = request.form['username']
 
-        if existing_users is None:
-            hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
-            users.insert_one({'name': request.form['username'], 'password': hashpass})
-            session['username'] = request.form['username']
-
-            return redirect(url_for('home'))
-        return "USERNAME IN DATABASE"
+                flash('Registered!')
+                print('registered', )
+                return redirect(url_for('home'))
+        except Exception as e:
+            print(e)
+            flash('Invalid Email or Email Exist')
+            return redirect(url_for('register'))
 
     return render_template("register.html")
 
@@ -43,7 +48,7 @@ def register():
 @app.route('/login')
 def login_page():
     if 'username' in session:
-        #print("Logged in as: " + session['username'])
+        # print("Logged in as: " + session['username'])
         return render_template("login.html")
     else:
         return render_template("login.html")
@@ -53,20 +58,25 @@ def login_page():
 def login():
     users = mongo.db.users
     login_user = users.find_one({'name': request.form['username']})
-    #print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
 
-    if login_user:
-        if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
-            session['username'] = request.form['username']
-            #print(session['username'])
-            return redirect(url_for('home'))
-    return "INVALID"
+    try:
+        if login_user:
+            if bcrypt.hashpw(request.form['password'].encode('utf-8'), login_user['password']) == login_user['password']:
+                session['username'] = request.form['username']
+                # print(session['username'])
+                return redirect(url_for('allproducts'))
+    except:
+        flash('Wrong email or password!')
+        print("Wrong email or password!")
+        return redirect(url_for('login_page'))
+
+    return render_template("login.html")
 
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('username', None)
-    #print(session['username'])
+    # print(session['username'])
     return redirect('/')
 
 
@@ -103,6 +113,11 @@ def checkout():
     return render_template("checkout.html")
 
 
+@app.route('/cart/')
+def cart():
+    return render_template("cart.html")
+
+
 @app.route('/about-us/')
 def about():
     return render_template("about.html")
@@ -130,7 +145,8 @@ if __name__ == '__main__':
 else:
     from random import SystemRandom
     import string
+
     app.secret_key = ''.join(
-        SystemRandom().choice(string.ascii_letters + string.digits)\
-            for _ in range(32)
+        SystemRandom().choice(string.ascii_letters + string.digits) \
+        for _ in range(32)
     )
