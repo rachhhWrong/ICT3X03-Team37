@@ -72,7 +72,7 @@ stages {
 			sleep 10
 			echo "Shutting down compose to save resources"
 			dir('containers') {
-				sh "docker compose down"
+				//sh "docker compose down"
 			}
 		}
 		failure {
