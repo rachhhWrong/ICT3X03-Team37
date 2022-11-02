@@ -8,14 +8,7 @@ import pyrebase
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
 #cred = credentials.Certificate('tisbakery-service.json')
 
-fbConfig = {'apiKey': "AIzaSyBPVALZE3ag3wNSK4REMwE0oPWmbIAiT9g",
-  'authDomain': "tisbakery.firebaseapp.com",
-  'projectId': "tisbakery",
-  'storageBucket': "tisbakery.appspot.com",
-  'messagingSenderId': "275241827055",
-  'appId': "1:275241827055:web:2ef12ef5c2ac2aa563b91a",
-  'measurementId': "G-E5XZ79LR6N",
-                  'databaseURL':'https://tisbakery-default-rtdb.asia-southeast1.firebasedatabase.app/'}
+
 
 fb = pyrebase.initialize_app(fbConfig)
 auth = fb.auth()
