@@ -8,22 +8,7 @@
     <meta content="Free Website Template" name="keywords">
     <meta content="Free Website Template" name="description">
 
-    <!-- Favicon -->
-    <link href="../static/img/favicon.ico" rel="icon">
-
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-
-    <!-- Libraries Stylesheet -->
-    <link href="../static/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-    <link href="../static/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="../static/css/style.min.css" rel="stylesheet">
+    {% include 'links.html' %}
 </head>
 
 <body>
@@ -65,7 +50,6 @@
             <div class="col-lg-4 py-0 py-lg-5">
                 <div class="text-center p-5" style="background: rgba(199, 177, 172, 0.8);">
                     <img class="img-fluid" src="../static/img/bg.jpg" alt="">            
-                    <a href="/good/id={{request.args.get('id', default=4)}}"><h7 class="text-white mb-3">Bread 4 - Bread</h7></a>
                     <a href="/indiv-product/id={{request.args.get('id', default=4)}}"><h7 class="text-white mb-3">Bread 4 - Bread</h7></a>
                 </div>
             </div>
@@ -75,25 +59,7 @@
 <!-- Home End -->
 
     {% include 'footer.html' %}
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="fa fa-angle-double-up"></i></a>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-    <script src="../static/lib/easing/easing.min.js"></script>
-    <script src="../static/lib/waypoints/waypoints.min.js"></script>
-    <script src="../static/lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="../static/lib/tempusdominus/js/moment.min.js"></script>
-    <script src="../static/lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="../static/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
-
-    <!-- Contact Javascript File -->
-    <script src="../static/mail/jqBootstrapValidation.min.js"></script>
-    <script src="../static/mail/contact.js"></script>
-
-    <!-- Template Javascript -->
-    <script src="../static/js/main.js"></script>
 </body>
 
 </html>
