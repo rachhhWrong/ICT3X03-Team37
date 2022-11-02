@@ -19,7 +19,6 @@ def favicon():
 
 @app.route('/')
 def home():
-    session.get('username')
     return render_template("home.html")
 
 
@@ -39,6 +38,9 @@ def register():
 
     return render_template("register.html")
 
+@app.route('/analyst_login')
+def analyst_login():
+    return render_template("analyst_login.html")
 
 @app.route('/login')
 def login_page():
@@ -54,12 +56,20 @@ def login():
     users = mongo.db.users
     login_user = users.find_one({'name': request.form['username']})
     #print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
+    #pseudocode dont erase
+    # analyst = mongo.db.analyst
+    # analyst_user = analyst.find_one({'name': request.form['username']})
 
     if login_user:
         if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
             session['username'] = request.form['username']
             #print(session['username'])
             return redirect(url_for('home'))
+    #pseudocode dont erase
+    # if analyst_user:
+    #     if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
+    #         session['username'] = request.form['username']
+    #         return redirect(url_for('analyst'))
     return "INVALID"
 
 
