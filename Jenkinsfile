@@ -1,34 +1,77 @@
 pipeline {
 agent any
+tools {
+	// docker credentials
+	'org.jenkinsci.plugins.docker.commons.tools.DockerTool' 'default'
+}
 stages {
-    stage('Test') {
+
+    stage('Check Requirements & Dump Docker info') {
 	    steps {
 	        echo 'Hello from Dev branch'
             sh 'echo "Testing Phase"'
             sh 'echo "Building the Repo"'
 		    sh 'echo "Installing Requirements.txt"'
 		    sh 'pip install -r requirements.txt'
-		    sh 'echo "Requirements met"'
-		    sh 'python3 test.py'
-		    echo 'test completed'
-		    
+		    echo "Requirements met"
+
+            echo "Getting Docker Information"
+		    sh 'docker info'
+		    sh 'docker version'
+		    sh 'docker compose version'
+
+
 	    }
 	}
 
-    stage('Build') {
-    parallel {
-		stage('Build') {
+	stage('Build Docker Compose') {
 		steps {
-		    sh 'python3 test.py'
-		    //input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
-		}
+			//git branch: 'Database', changelog: false, credentialsId: 'demogithubkey', poll: false, url: 'git@github.com:rachhhWrong/ICT3X03-Team37.git'
+
+			dir('containers') {
+				sh "docker compose build --pull"
+			}
 		}
 	}
+	stage('DependencyCheck') {
+		steps {
+			script {
+				docker.image("3x03/web").withRun("","sleep infinity"){c->
+					sh "docker exec -t ${c.id} pip freeze > requirements.txt"
+				}
+			}
+			dependencyCheck additionalArguments: '--format HTML --format XML', odcInstallation: 'Default'
+		}
+		post {
+			success {
+				dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+			}
+		}
 	}
+
+	stage('Docker Test') {
+		steps{
+			script{
+				docker.image("3x03/db").withRun("--env-file containers/dev.env"){_->
+					docker.image("3x03/web").withRun("--env-file containers/dev.env",){c->
+						sh "docker cp test.py ${c.id}:/app/test.py"
+						sh "docker exec -t ${c.id} python test.py"
+					}
+				}
+			}
+		}
+	}
+
 	stage('Deploy') {
 	steps {
-		echo "deploying the application"
-		sh 'FLASK_APP=main.py flask run'
+		echo "Deploying the Application"
+		withCredentials([usernamePassword(credentialsId: 'd72d3cc9-af19-4e0e-a8a3-9b83d2526e3e', passwordVariable: 'MONGO_INITDB_ROOT_PASSWORD', usernameVariable: 'MONGO_INITDB_ROOT_USERNAME')]) {
+			withCredentials([usernamePassword(credentialsId: '5d318559-a4f3-4586-acd5-504d409403e5', passwordVariable: 'MONGO_NONROOT_PASSWORD', usernameVariable: 'MONGO_NONROOT_USERNAME')]) {
+				dir('containers') {
+					sh "docker compose up "
+				}
+			}
+		}
 	}
 	post {
 		always {
@@ -37,16 +80,34 @@ stages {
 		}
 		success {
 			echo "Flask Application Up and running!!"
+			
+			sleep 10
+			echo "Checking if containers are still running"
+			script {
+				RUN_STATUS = sh (
+					script: "docker inspect --format='{{.State.Running}}' 3x03-team37-web-1",
+					returnStdout: true
+				).trim()
+				if (RUN_STATUS == "false") {
+					sh "docker logs --tail 50 3x03-team37-web-1"
+					error('Docker container error was detected')
+				}
+			}
+			
+			echo "Shutting down compose to save resources"
+			dir('containers') {
+				//sh "docker compose down"
+			}
 		}
 		failure {
 			echo 'Build stage failed'
 			error('Stopping early…')
 		}
 	}
-	
 
 
-    
+
+
 }
 }
 }
