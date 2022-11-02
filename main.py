@@ -30,7 +30,7 @@ def register():
 
         if existing_users is None:
             hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
-            users.insert_one({'name': request.form['username'], 'password': hashpass})
+            users.insert_one({'name': request.form['username'], 'password': hashpass, 'email': request.form['email']})
             session['username'] = request.form['username']
 
             return redirect(url_for('home'))
@@ -54,7 +54,7 @@ def login_page():
 @app.route('/submit', methods=['POST'])
 def login():
     users = mongo.db.users
-    login_user = users.find_one({'name': request.form['username']})
+    login_user = users.find_one({'email': request.form['email']})
     #print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
     #pseudocode dont erase
     # analyst = mongo.db.analyst
@@ -62,7 +62,7 @@ def login():
 
     if login_user:
         if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
-            session['username'] = request.form['username']
+            session['username'] = login_user['name']
             #print(session['username'])
             return redirect(url_for('home'))
     #pseudocode dont erase
