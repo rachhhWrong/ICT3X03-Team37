@@ -48,20 +48,8 @@ stages {
 			}
 		}
 	}
-	stage('Test') {
-		steps{
-			script{
-				docker.image("3x03/db").withRun("--env-file containers/dev.env"){_->
-					docker.image("3x03/web").withRun("--env-file containers/dev.env","sleep infinity"){c->
-						sh "docker cp test.py ${c.id}:/app/test.py"
-						sh "docker exec -t ${c.id} python test.py"
-					}
-				}
-			}
-		}
-	}
 
-	stage('Test') {
+	stage('Docker Test') {
 		steps{
 			script{
 				docker.image("3x03/db").withRun("--env-file containers/dev.env"){_->
@@ -103,10 +91,10 @@ stages {
 			error('Stopping early…')
 		}
 	}
-	
 
 
-    
+
+
 }
 }
 }
