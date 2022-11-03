@@ -79,7 +79,7 @@ def login():
                 flash('Login Success', category='success')
                 return redirect(url_for('allproducts'))
             else:
-                flash('Incorrect Password', category='error')
+                flash('Login Failed', category='error')
         else:
             flash('Email does not exist', category='error')
 
