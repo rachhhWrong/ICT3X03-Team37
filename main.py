@@ -18,7 +18,7 @@ def favicon():
 
 @app.route('/')
 def home():
-    session.get('username')
+    session.get('email')
     return render_template("home.html")
 
 
