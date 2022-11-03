@@ -99,16 +99,6 @@
                             <p id="length" class="invalid">Minimum <b>8 characters</b></p>
                         </div>
                     </div>
-                    <div>
-                        {% with messages = get_flashed_messages() %}
-                            {% if messages %}
-                                {% for msg in messages %}
-                                    <p style="color:white;font-size:30px;">{{ msg }}</p>
-                                {% endfor %}
-                            {% endif %}
-                        {% endwith %}
-                    </div>
-
                 </div>
             </div>
         </div>

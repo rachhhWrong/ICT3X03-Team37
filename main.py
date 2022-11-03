@@ -36,52 +36,62 @@ def register():
                 session['name'] = request.form['name']
                 session['address'] = request.form['address']
                 session['mobile'] = request.form['mobile']
-                flash('Registered!')
+                flash('Registered!', category='success')
                 print('registered', )
                 return redirect(url_for('home'))
         except Exception as e:
             print(e)
-            flash('Invalid Email or Email Exist')
+            flash('Invalid Email or Email Exist', category='error')
             return redirect(url_for('register'))
 
     return render_template("register.html")
+
 
 @app.route('/analyst_login')
 def analyst_login():
     return render_template("analyst_login.html")
 
-@app.route('/login')
+
+# to remove
+@app.route('/sss')
 def login_page():
     if 'email' in session:
-        #print("Logged in as: " + session['username'])
+        # print("Logged in as: " + session['username'])
         return render_template("login.html")
     else:
         return render_template("login.html")
 
 
-@app.route('/submit', methods=['POST'])
+@app.route('/login', methods=['POST', 'GET'])
 def login():
     users = mongo.db.users
-    login_user = users.find_one({'email': request.form['email']})
-    #print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
-    #pseudocode dont erase
-    # analyst = mongo.db.analyst
-    # analyst_user = analyst.find_one({'name': request.form['username']})
 
-    if login_user:
-        if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
-            session['email'] = login_user['email']
-            session['name'] = login_user['name']
-            session['address'] = login_user['address']
-            session['mobile'] = login_user['mobile']
-            #print(session['username'])
-            return redirect(url_for('home'))
-    #pseudocode dont erase
-    # if analyst_user:
-    #     if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
-    #         session['username'] = request.form['username']
-    #         return redirect(url_for('analyst'))
-    return "INVALID"
+    if request.method == 'POST':
+        login_user = users.find_one({'email': request.form['email']})
+
+        # print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
+        # pseudocode dont erase
+        # analyst = mongo.db.analyst
+        # analyst_user = analyst.find_one({'name': request.form['username']})
+        if login_user:
+            if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
+                session['email'] = login_user['email']
+                flash('Login Success', category='success')
+                return redirect(url_for('allproducts'))
+            else:
+                flash('Incorrect Password', category='error')
+        else:
+            flash('Email does not exist', category='error')
+
+    return render_template("login.html", boolean=True)
+
+
+
+# pseudocode dont erase
+# if analyst_user:
+#     if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
+#         session['username'] = request.form['username']
+#         return redirect(url_for('analyst'))
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -90,7 +100,7 @@ def logout():
     session.pop('name', None)
     session.pop('address', None)
     session.pop('mobile', None)
-    #print(session['username'])
+    # print(session['username'])
     return redirect('/')
 
 
@@ -159,7 +169,8 @@ if __name__ == '__main__':
 else:
     from random import SystemRandom
     import string
+
     app.secret_key = ''.join(
-        SystemRandom().choice(string.ascii_letters + string.digits)\
-            for _ in range(32)
+        SystemRandom().choice(string.ascii_letters + string.digits) \
+        for _ in range(32)
     )
