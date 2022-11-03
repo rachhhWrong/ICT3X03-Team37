@@ -14,11 +14,6 @@
 <body>
 {% include 'navbar.html' %}
 <!-- Page Header Start -->
-    <div class="container-fluid page-header mb-5 position-relative">
-        <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
-            <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">Login and start ordering from us!</h1>
-        </div>
-    </div>
     <!-- Page Header End -->
 
      <!-- Reservation Start -->
@@ -31,7 +26,7 @@
                             <h1 class="text-white mb-4 mt-5">Login</h1>
                             <form class="mb-5" method="post", action="{{url_for('login')}}">
                                 <div class="form-group">
-                                    <input type="email" name="email" class="form-control bg-transparent border-primary p-4 field" placeholder="Email"
+                                    <input type="text" name="username" class="form-control bg-transparent border-primary p-4 field" placeholder="Name"
                                         required="required" />
                                 </div>
                                 <div class="form-group">
@@ -43,15 +38,6 @@
                                     <!--<button class="btn btn-primary btn-block font-weight-bold py-3" type="submit">Register</button> -->
                                     <input type="submit" value="Login" class="btn btn-primary btn-lg">
                                 </div>
-                                <div>
-                                {% with messages = get_flashed_messages() %}
-                                    {% if messages %}
-                                        {% for msg in messages %}
-                                            <p style="color:white;font-size:30px;">{{ msg }}</p>
-                                        {% endfor %}
-                                    {% endif %}
-                                {% endwith %}
-                            </div>
                             </form>
                         </div>
                     </div>
@@ -61,6 +47,5 @@
     </div>
     <!-- Reservation End -->
 </body>
-{% include 'footer.html' %}
 </html>
 {% endblock %}
