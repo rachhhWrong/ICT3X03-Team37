@@ -5,22 +5,20 @@
     <meta charset="utf-8">
     <title>TIS Bakery</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="Free Website Template" name="keywords">
-    <meta content="Free Website Template" name="description">
 
     {% include 'links.html' %}
 </head>
 
 <body>
-    <div>{% include 'navbar.html' %}</div>
-    
-        <!-- Page Header Start -->
-    <div class="container-fluid page-header mb-5 position-relative overlay-bottom">
-        <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
-            <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">Bread, Pastries, Cakes</h1>
-        </div>
-        
+<div>{% include 'navbar.html' %}</div>
+
+<!-- Page Header Start -->
+<div class="container-fluid page-header mb-5 position-relative overlay-bottom">
+    <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
+        <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">Bread, Pastries, Cakes</h1>
     </div>
+
+</div>
 
 <!-- All Products Start -->
 <div class="container-fluid py-5">
@@ -28,21 +26,23 @@
         <div class="section-title">
             <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">All Baked Goods</h4>
         </div>
-        <div class = "row row-col-3">
+        <div class="row row-col-3">
             {% for product in allproducts %}
-            <div class="col-sm">
-                <div class="text-center p-5" style="background: rgba(199, 177, 172, 0.8);">
-                    <img class="img-fluid" src="../static/img/bg.jpg" alt=""> 
-                    <a href="/indiv-product/id={{product['product_id']}}"><h7 class="text-white mb-3">{{product['product_name']}}</h7></a>
+                <div class="col-sm">
+                    <div class="text-center p-5" style="background: rgba(199, 177, 172, 0.8);">
+                        <img class="img-fluid" src="../static/img/bg.jpg" alt="">
+                        <a href="/indiv-product/id={{ product['product_id'] }}">
+                            <h7 class="text-white mb-3">{{ product['product_name'] }}</h7>
+                        </a>
+                    </div>
                 </div>
-            </div>
             {% endfor %}
         </div>
     </div>
 </div>
 <!-- All Products End -->
 
-    {% include 'footer.html' %}
+{% include 'footer.html' %}
 
 </body>
 

@@ -97,9 +97,7 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('email', None)
-    session.pop('name', None)
-    session.pop('address', None)
-    session.pop('mobile', None)
+    flash('Successfully Logged Out', category='success')
     # print(session['username'])
     return redirect('/')
 
