@@ -27,12 +27,12 @@ def home():
 def register():
     if request.method == 'POST':
         users = mongo.db.users
-        existing_users = users.find_one({"name": request.form['username']})
+        existing_users = users.find_one({"email": request.form['email']})
         try:
             if existing_users is None:
                 hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
-                users.insert_one({'name': request.form['username'], 'password': hashpass})
-                session['username'] = request.form['username']
+                users.insert_one({'email': request.form['email'], 'password': hashpass})
+                session['email'] = request.form['email']
 
                 flash('Registered!')
                 print('registered', )
@@ -50,7 +50,7 @@ def analyst_login():
 
 @app.route('/login')
 def login_page():
-    if 'username' in session:
+    if 'email' in session:
         #print("Logged in as: " + session['username'])
         return render_template("login.html")
     else:
@@ -68,7 +68,7 @@ def login():
 
     if login_user:
         if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
-            session['username'] = login_user['name']
+            session['email'] = login_user['email']
             #print(session['username'])
             return redirect(url_for('home'))
     #pseudocode dont erase
@@ -81,16 +81,16 @@ def login():
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
-    session.pop('username', None)
+    session.pop('email', None)
     #print(session['username'])
     return redirect('/')
 
 
 @app.route('/navbar')
 def nav_logout():
-    if 'username' in session:
-        username = session['username']
-        return 'Logged in as ' + username + '<br>' + "<b><a href = '/logout'>click here to logout</a></b>"
+    if 'email' in session:
+        email = session['email']
+        return 'Logged in as ' + email + '<br>' + "<b><a href = '/logout'>click here to logout</a></b>"
     return "You are not logged in <br><a href = '/login'></b>" + "click here to login</b></a>"
 
 
