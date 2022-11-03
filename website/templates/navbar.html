@@ -9,8 +9,8 @@
         </button>
         <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
             <div class="navbar-nav ml-auto p-4">
-                {% if session.username %}
-                    <a>welcome {{ session['username'] }}</a>
+                {% if session.email %}
+                    <a class="nav-item" >welcome {{ session['email'] }}</a>
                     <a href="{{url_for('about')}}" class="nav-item nav-link">About Us</a>
                     <a href="{{url_for('allproducts')}}" class="nav-item nav-link">Our Goods</a>
                     <a href="{{url_for('cart')}}" class="nav-item nav-link">Cart</a>
