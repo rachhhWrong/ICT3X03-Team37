@@ -131,13 +131,16 @@ def about():
 
 @app.route('/all-products/')
 def allproducts():
-    return render_template("all_products.html")
+    allproducts = mongo.db.products
+    findproduct = allproducts.find()
+    return render_template("all_products.html", allproducts=findproduct)
 
 
 @app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
 def showgood(id):
-    id = request.args.get('id')
-    return render_template("indiv_product.html")
+    product = mongo.db.products
+    retrieve_product = product.find_one({'product_id':id})
+    return render_template("indiv_product.html", product=retrieve_product)
 
 
 @app.route('/menu/')

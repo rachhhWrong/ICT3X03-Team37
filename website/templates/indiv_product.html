@@ -21,24 +21,24 @@
         </div>
     </div>
 
-<!-- Home Start -->
+<!-- Indiv Product Start -->
 <div class="container-fluid py-5">
     <div class="container">
         <div class="reservation position-relative overlay-top overlay-bottom">
             <div class="row align-items-center">
+                {% block product %}
                 <div class="col-lg-6 my-5 my-lg-0">
                     <div class="p-5">
                         <img class="img-fluid" src="../static/img/still-life-delicious-pastry.jpg" alt="">            
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    
                     <div class="text-center p-5" style="background: rgba(51, 33, 29, .8);">
                         <div class="mb-4">
-                            <h1 class="text-white">Bread 1</h1>
-                    </div>
-                        <p class="text-white">Sprinkled over a chewy roll, the Himalayan pink salt leaves no salty aftertaste, but joy in every bite.
-                        </p>
+                            <h1 class="text-white">{{product['product_name']}}</h1>
+                        </div>
+                        <p class="text-white">{{product['product_desc']}}</p>
+                        <p class="text-white">{{product['product_price']}}</p>
 
                         <form class="mb-5" name="register_form">
                             <div class="form-group">
@@ -48,16 +48,16 @@
                             <p class="error error--hidden"></p>
                             <div>
                                 <button class="btn btn-primary btn-block font-weight-bold py-3" type="submit">Add to Cart</button>
-                                <!--<input type="submit" value="Register" class="btn"> -->
                             </div>
                         </form>
                     </div>
-                </div>
+               </div>
+               {% endblock %} 
             </div>
         </div>
     </div>
 </div>
-<!-- Home End -->
+<!-- Indiv Product End -->
 
     {% include 'footer.html' %}
 
