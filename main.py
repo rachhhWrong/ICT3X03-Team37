@@ -31,9 +31,12 @@ def register():
         try:
             if existing_users is None:
                 hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
-                users.insert_one({'email': request.form['email'], 'password': hashpass})
+                users.insert_one({'name': request.form['name'], 'email': request.form['email'], 'password': hashpass,
+                                  'address': request.form['address'], 'mobile': request.form['mobile']})
                 session['email'] = request.form['email']
-
+                session['name'] = request.form['name']
+                session['address'] = request.form['address']
+                session['mobile'] = request.form['mobile']
                 flash('Registered!')
                 print('registered', )
                 return redirect(url_for('home'))
@@ -69,6 +72,9 @@ def login():
     if login_user:
         if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
             session['email'] = login_user['email']
+            session['name'] = login_user['name']
+            session['address'] = login_user['address']
+            session['mobile'] = login_user['mobile']
             #print(session['username'])
             return redirect(url_for('home'))
     #pseudocode dont erase
@@ -82,6 +88,9 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('email', None)
+    session.pop('name', None)
+    session.pop('address', None)
+    session.pop('mobile', None)
     #print(session['username'])
     return redirect('/')
 
