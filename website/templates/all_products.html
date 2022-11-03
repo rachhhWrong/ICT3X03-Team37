@@ -30,7 +30,7 @@
             {% for product in allproducts %}
                 <div class="col-sm">
                     <div class="text-center p-5" style="background: rgba(199, 177, 172, 0.8);">
-                        <img class="img-fluid" src="../static/img/bg.jpg" alt="">
+                        <img class="img-fluid" src="../static/img/{{product['product_id']}}.jpg" alt="">
                         <a href="/indiv-product/id={{ product['product_id'] }}">
                             <h7 class="text-white mb-3">{{ product['product_name'] }}</h7>
                         </a>
