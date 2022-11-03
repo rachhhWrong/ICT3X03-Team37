@@ -1,14 +1,13 @@
 from flask import *
-from flask_pymongo import PyMongo
+
 from website import auth
 from website.models import *
 import os
 import bcrypt
 
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
-# app.config['MONGO_DBNAME'] = "TISBAKERY"
-# app.config['MONGO_URI'] = "mongodb://localhost:27017/account"
-# mongo = PyMongo(app)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
 mongo = auth.start_mongo_client(app)
 
 
@@ -109,7 +108,7 @@ def account():
     return render_template("account_page.html")
 
 
-@app.route('/account/edit_account')
+@app.route('/edit_account')
 def edit_account():
     return render_template("edit_account_page.html")
 
