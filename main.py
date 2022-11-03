@@ -125,7 +125,7 @@ def account():
     return render_template("account_page.html")
 
 
-@app.route('account/edit_account_page')
+@app.route('/edit_account/')
 def edit_account():
     return render_template("edit_account_page.html")
 
