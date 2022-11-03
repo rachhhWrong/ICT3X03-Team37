@@ -1,14 +1,13 @@
 from flask import *
-from flask_pymongo import PyMongo
+
 from website import auth
 from website.models import *
 import os
 import bcrypt
 
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
-# app.config['MONGO_DBNAME'] = "TISBAKERY"
-# app.config['MONGO_URI'] = "mongodb://localhost:27017/account"
-# mongo = PyMongo(app)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
 mongo = auth.start_mongo_client(app)
 
 
@@ -27,64 +26,89 @@ def home():
 def register():
     if request.method == 'POST':
         users = mongo.db.users
-        existing_users = users.find_one({"name": request.form['username']})
+        existing_users = users.find_one({"email": request.form['email']})
         try:
             if existing_users is None:
                 hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
-                users.insert_one({'name': request.form['username'], 'password': hashpass})
-                session['username'] = request.form['username']
-
-                flash('Registered!')
+                users.insert_one({'name': request.form['name'], 'email': request.form['email'], 'password': hashpass,
+                                  'address': request.form['address'], 'mobile': request.form['mobile']})
+                session['email'] = request.form['email']
+                session['name'] = request.form['name']
+                session['address'] = request.form['address']
+                session['mobile'] = request.form['mobile']
+                flash('Registered!', category='success')
                 print('registered', )
                 return redirect(url_for('home'))
         except Exception as e:
             print(e)
-            flash('Invalid Email or Email Exist')
+            flash('Invalid Email or Email Exist', category='error')
             return redirect(url_for('register'))
 
     return render_template("register.html")
 
 
-@app.route('/login')
+@app.route('/analyst_login')
+def analyst_login():
+    return render_template("analyst_login.html")
+
+
+# to remove
+@app.route('/sss')
 def login_page():
-    if 'username' in session:
+    if 'email' in session:
         # print("Logged in as: " + session['username'])
         return render_template("login.html")
     else:
         return render_template("login.html")
 
 
-@app.route('/submit', methods=['POST'])
+@app.route('/login', methods=['POST', 'GET'])
 def login():
     users = mongo.db.users
-    login_user = users.find_one({'name': request.form['username']})
 
-    try:
+    if request.method == 'POST':
+        login_user = users.find_one({'email': request.form['email']})
+
+        # print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
+        # pseudocode dont erase
+        # analyst = mongo.db.analyst
+        # analyst_user = analyst.find_one({'name': request.form['username']})
         if login_user:
-            if bcrypt.hashpw(request.form['password'].encode('utf-8'), login_user['password']) == login_user['password']:
-                session['username'] = request.form['username']
-                # print(session['username'])
+            if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
+                session['email'] = login_user['email']
+                flash('Login Success', category='success')
                 return redirect(url_for('allproducts'))
-    except:
-        flash('Wrong email or password!')
-        print("Wrong email or password!")
-        return redirect(url_for('login_page'))
+            else:
+                flash('Login Failed', category='error')
+        else:
+            flash('Email does not exist', category='error')
 
-    return render_template("login.html")
+    return render_template("login.html", boolean=True)
+
+
+
+# pseudocode dont erase
+# if analyst_user:
+#     if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
+#         session['username'] = request.form['username']
+#         return redirect(url_for('analyst'))
 
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
-    session.pop('username', None)
+    session.pop('email', None)
+    session.pop('name', None)
+    session.pop('address', None)
+    session.pop('mobile', None)
     # print(session['username'])
     return redirect('/')
 
 
 @app.route('/navbar')
 def nav_logout():
-    if 'username' in session:
-        username = session['username']
-        return 'Logged in as ' + username + '<br>' + "<b><a href = '/logout'>click here to logout</a></b>"
+    if 'email' in session:
+        email = session['email']
+        return 'Logged in as ' + email + '<br>' + "<b><a href = '/logout'>click here to logout</a></b>"
     return "You are not logged in <br><a href = '/login'></b>" + "click here to login</b></a>"
 
 
@@ -103,7 +127,7 @@ def account():
     return render_template("account_page.html")
 
 
-@app.route('/account/edit_account')
+@app.route('/edit_account')
 def edit_account():
     return render_template("edit_account_page.html")
 
@@ -125,12 +149,15 @@ def about():
 
 @app.route('/all-products/')
 def allproducts():
-    return render_template("all_products.html")
+    allproducts = mongo.db.products
+    findproduct = allproducts.find()
+    return render_template("all_products.html", allproducts=findproduct)
 
 @app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
 def showgood(id):
-    id = request.args.get('id')
-    return render_template("indiv_product.html")
+    product = mongo.db.products
+    retrieve_product = product.find_one({'product_id':id})
+    return render_template("indiv_product.html", product=retrieve_product)
 
 
 

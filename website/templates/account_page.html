@@ -10,7 +10,6 @@
 <body>
 {% include 'navbar.html' %}
 <br><br><br><br><br><br>
-
 <div class="row gutters-sm">
     <div class="col-md-4 mb-3">
         <div class="card">
@@ -33,7 +32,7 @@
                         <h6 class="mb-0">Full Name</h6>
                     </div>
                     <div class="col-sm-9 text-secondary">
-                        Name
+                        {{ session['name'] }}
                     </div>
                 </div>
                 <hr>
@@ -42,16 +41,7 @@
                         <h6 class="mb-0">Email</h6>
                     </div>
                     <div class="col-sm-9 text-secondary">
-                        fip@jukmuh.al
-                    </div>
-                </div>
-                <hr>
-                <div class="row">
-                    <div class="col-sm-3">
-                        <h6 class="mb-0">Phone</h6>
-                    </div>
-                    <div class="col-sm-9 text-secondary">
-                        (239) 816-9029
+                        {{ session['email'] }}
                     </div>
                 </div>
                 <hr>
@@ -60,7 +50,7 @@
                         <h6 class="mb-0">Mobile</h6>
                     </div>
                     <div class="col-sm-9 text-secondary">
-                        (320) 380-4539
+                        {{ session['mobile'] }}
                     </div>
                 </div>
                 <hr>
@@ -69,7 +59,7 @@
                         <h6 class="mb-0">Address</h6>
                     </div>
                     <div class="col-sm-9 text-secondary">
-                        abc 123
+                        {{ session['address'] }}
                     </div>
                 </div>
                 <hr>
@@ -84,7 +74,6 @@
 
     </div>
 </div>
-
 {% include 'footer.html' %}
 </body>
 </html>
