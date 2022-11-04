@@ -16,7 +16,7 @@ mongo = auth.start_mongo_client(app)
 
 @app.after_request
 def add_security_headers(response):
-    if __name__ == '__main__':
+    if __name__ == '__main__' and not os.environ.get("DEPLOY_MODE", None):
         # only use these headers in deployment mode
         return
     # require HTTPS
@@ -198,8 +198,8 @@ else:
             SystemRandom().choice(string.ascii_letters + string.digits) \
             for _ in range(32)
         )
-    
-    # cookies expire after 15 minutes inactivity
-    app.config["PERMANENT_SESSION_LIFETIME"] = 900
-    # require HTTPS to load cookies
-    app.config["SESSION_COOKIE_SECURE"] = True
+    if mode := os.environ.get("DEPLOY_MODE", None):
+        # cookies expire after 15 minutes inactivity
+        app.config["PERMANENT_SESSION_LIFETIME"] = 900
+        # require HTTPS to load cookies
+        app.config["SESSION_COOKIE_SECURE"] = True
