@@ -8,8 +8,27 @@ import bcrypt
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
+# never send cookies to third-party sites
+app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
+# There are more configs set for non-debug mode; see bottom of file
+
 mongo = auth.start_mongo_client(app)
 
+@app.after_request
+def add_security_headers(response):
+    if __name__ == '__main__' and not os.environ.get("DEPLOY_MODE", None):
+        # only use these headers in deployment mode
+        return
+    # require HTTPS
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000'
+    # do not allow this website to be embedded inside another website
+    # prevent clickjacking attack
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    # disable content type auto-detection on browser
+    # prevents scripts or webpages being loaded through image or text
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+
+    return response
 
 @app.route('/favicon.ico')
 def favicon():
@@ -191,10 +210,19 @@ if __name__ == '__main__':
     app.secret_key = 'secret'
     app.run(debug=True, port=3000)
 else:
+    # deployment mode settings
     from random import SystemRandom
     import string
 
-    app.secret_key = ''.join(
-        SystemRandom().choice(string.ascii_letters + string.digits) \
-        for _ in range(32)
-    )
+    if skey := os.environ.get("SECRET_KEY", None):
+        app.secret_key = skey
+    else:
+        app.secret_key = ''.join(
+            SystemRandom().choice(string.ascii_letters + string.digits) \
+            for _ in range(32)
+        )
+    if mode := os.environ.get("DEPLOY_MODE", None):
+        # cookies expire after 15 minutes inactivity
+        app.config["PERMANENT_SESSION_LIFETIME"] = 900
+        # require HTTPS to load cookies
+        app.config["SESSION_COOKIE_SECURE"] = True

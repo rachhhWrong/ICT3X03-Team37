@@ -19,6 +19,8 @@ services:
       - MONGO_NONROOT_USERNAME
       - MONGO_NONROOT_PASSWORD
       - MONGO_INITDB_DATABASE
+      - SECRET_KEY
+      - DEPLOY_MODE=True
     ports:
       # TODO: use port 443 after setting up TLS
       - "80:80"
