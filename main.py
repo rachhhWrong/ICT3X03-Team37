@@ -163,21 +163,11 @@ def showgood(id):
     retrieve_product = product.find_one({'product_id':id})
     return render_template("indiv_product.html", product=retrieve_product)
 
-@app.route('/indiv-product/id=<int:id>', methods=['POST'])
-def addToCart1(id):
-    if request.method == 'POST':
-        product = mongo.db.products
-        retrieve_product = product.find_one({'product_id':id})
-        user = mongo.db.users
-        retrieve_userid = user.find_one({'_id':'uid'})
-        if 'email' in session:
-            email = session['email']
-    
-    return render_template("indiv_product.html", product=retrieve_product)
-
 @app.route('/checkout/')
-def checkout():
-    return render_template("checkout.html")
+def displayCart():
+    cart = mongo.db.cart
+    retrieve_cart = cart.find_one({'product_id':id})
+    return render_template("checkout.html", cart=retrieve_cart)
 
 @app.route('/create-checkout-session', methods=['POST'])
 def create_checkout_session():
