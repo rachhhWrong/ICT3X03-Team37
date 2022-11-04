@@ -191,10 +191,13 @@ else:
     from random import SystemRandom
     import string
 
-    app.secret_key = ''.join(
-        SystemRandom().choice(string.ascii_letters + string.digits) \
-        for _ in range(32)
-    )
+    if skey := os.environ.get("SECRET_KEY", None):
+        app.secret_key = skey
+    else:
+        app.secret_key = ''.join(
+            SystemRandom().choice(string.ascii_letters + string.digits) \
+            for _ in range(32)
+        )
     
     # cookies expire after 15 minutes inactivity
     app.config["PERMANENT_SESSION_LIFETIME"] = 900
