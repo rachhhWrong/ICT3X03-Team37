@@ -137,8 +137,29 @@ def checkout():
 
 @app.route('/cart/')
 def cart():
+    if 'email' not in session:
+        flash("Please login first!", category='error')
+        return render_template("login.html")
+    #allproducts = mongo.db.products
+    #findproduct = allproducts.find()
+    #allCart = mongo.db.cart
+    #findCart = allCart.find()
     return render_template("cart.html")
 
+ 
+    
+
+@app.route('/addToCart', methods=['GET', 'POST'])
+def addToCart():
+    allproducts = mongo.db.products
+    findproduct = allproducts.find()
+    if 'email' not in session:
+        flash("Please login first!")
+        return render_template("login.html", category='error')
+    else:
+        quantity = request.form.get('quantity')
+        flash(quantity)
+        return render_template("all_products.html", allproducts=findproduct)
 
 @app.route('/about-us/')
 def about():
