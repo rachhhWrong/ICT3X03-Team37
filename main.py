@@ -15,7 +15,6 @@ mongo = auth.start_mongo_client(app)
 def favicon():
     app.send_static_file('favicon.ico')
 
-
 @app.route('/')
 def home():
     session.get('email')
@@ -148,6 +147,15 @@ def edit_account():
             return redirect(url_for('home'))
     return render_template("edit_account_page.html", name=name, address=address, mobile=mobile)
 
+@app.route('/delete_account/', methods=['GET', 'POST'])
+def delete_account():
+    if request.method == 'POST':
+        users = mongo.db.users
+        user = users.find_one({'email': session['email']})
+        if user:
+            users.delete_one({'email': session['email']})
+            return redirect(url_for('home'))
+    return redirect(url_for('home'))
 
 @app.route('/checkout/')
 def checkout():
