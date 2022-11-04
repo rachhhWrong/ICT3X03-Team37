@@ -121,11 +121,6 @@ def edit_account():
     return render_template("edit_account_page.html")
 
 
-@app.route('/checkout/')
-def checkout():
-    return render_template("checkout.html")
-
-
 @app.route('/cart/')
 def cart():
     if 'email' not in session:
@@ -169,7 +164,7 @@ def showgood(id):
     return render_template("indiv_product.html", product=retrieve_product)
 
 @app.route('/indiv-product/id=<int:id>', methods=['POST'])
-def addToCart(id):
+def addToCart1(id):
     if request.method == 'POST':
         product = mongo.db.products
         retrieve_product = product.find_one({'product_id':id})
@@ -179,10 +174,6 @@ def addToCart(id):
             email = session['email']
     
     return render_template("indiv_product.html", product=retrieve_product)
-
-@app.route('/cart/')
-def cart():
-    return render_template("cart.html")
 
 @app.route('/checkout/')
 def checkout():
