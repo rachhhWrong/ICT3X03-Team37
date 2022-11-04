@@ -32,10 +32,8 @@ def register():
                 hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
                 users.insert_one({'name': request.form['name'], 'email': request.form['email'], 'password': hashpass,
                                   'address': request.form['address'], 'mobile': request.form['mobile']})
+                session.permanent = True
                 session['email'] = request.form['email']
-                session['name'] = request.form['name']
-                session['address'] = request.form['address']
-                session['mobile'] = request.form['mobile']
                 flash('Registered!', category='success')
                 print('registered', )
                 return redirect(url_for('home'))
@@ -77,6 +75,7 @@ def login():
         if login_user:
             if bcrypt.hashpw(request.form['password'].encode('utf-8'), login_user['password']) == login_user[
                 'password']:
+                session.permanent = True
                 session['email'] = login_user['email']
                 flash('Login Success', category='success')
                 return redirect(url_for('allproducts'))
