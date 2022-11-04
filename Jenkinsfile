@@ -80,7 +80,7 @@ stages {
 		}
 		success {
 			echo "Flask Application Up and running!!"
-			
+
 			sleep 10
 			echo "Checking if containers are still running"
 			script {
@@ -93,7 +93,7 @@ stages {
 					error('Docker container error was detected')
 				}
 			}
-			
+
 			echo "Shutting down compose to save resources"
 			dir('containers') {
 				//sh "docker compose down"

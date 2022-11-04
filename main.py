@@ -18,7 +18,7 @@ def favicon():
 
 @app.route('/')
 def home():
-    session.get('username')
+    session.get('email')
     return render_template("home.html")
 
 
@@ -125,7 +125,7 @@ def account():
     return render_template("account_page.html")
 
 
-@app.route('/edit_account')
+@app.route('/account/edit_account/')
 def edit_account():
     return render_template("edit_account_page.html")
 
