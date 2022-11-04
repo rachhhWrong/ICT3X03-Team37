@@ -123,10 +123,16 @@ def analyst():
 
 @app.route('/account/')
 def account():
-    return render_template("account_page.html")
+    session.get('email')
+    users = mongo.db.users
+    user = users.find_one({'email': session['email']})
+    name = user['name']
+    address = user['address']
+    mobile = user['mobile']
+    return render_template("account_page.html", name=name, address=address, mobile=mobile)
 
 
-@app.route('/account/edit_account/', methods=['GET', 'POST'])
+@app.route('/edit_account/', methods=['GET', 'POST'])
 def edit_account():
     session.get('email')
     users = mongo.db.users
