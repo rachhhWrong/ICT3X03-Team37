@@ -6,7 +6,8 @@ import os
 import bcrypt
 
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
-app.config["SESSION_PERMANENT"] = False
+app.secret_key = 'secret'
+app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 mongo = auth.start_mongo_client(app)
 
@@ -14,6 +15,7 @@ mongo = auth.start_mongo_client(app)
 @app.route('/favicon.ico')
 def favicon():
     app.send_static_file('favicon.ico')
+
 
 @app.route('/')
 def home():
@@ -49,16 +51,6 @@ def analyst_login():
     return render_template("analyst_login.html")
 
 
-# to remove
-@app.route('/sss')
-def login_page():
-    if 'email' in session:
-        # print("Logged in as: " + session['username'])
-        session.get('email')
-        return render_template("login.html")
-    else:
-        return render_template("login.html")
-
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -74,14 +66,14 @@ def login():
         if login_user:
             if bcrypt.hashpw(request.form['password'].encode('utf-8'), login_user['password']) == login_user[
                 'password']:
-                session.permanent = True
-                session['email'] = login_user['email']
+
+                session['email'] = request.form['email']
                 flash('Login Success', category='success')
                 return redirect(url_for('allproducts'))
             else:
                 flash('Login Failed', category='error')
         else:
-            flash('Email does not exist', category='error')
+            flash('Account does not exist', category='error')
 
     return render_template("login.html", boolean=True)
 
@@ -101,12 +93,12 @@ def logout():
     return redirect('/')
 
 
-@app.route('/navbar')
-def nav_logout():
-    if 'email' in session:
-        email = session['email']
-        return 'Logged in as ' + email + '<br>' + "<b><a href = '/logout'>click here to logout</a></b>"
-    return "You are not logged in <br><a href = '/login'></b>" + "click here to login</b></a>"
+#@app.route('/navbar')
+#def nav_logout():
+    #if 'email' in session:
+        #email = session['email']
+        #return 'Logged in as ' + email + '<br>' + "<b><a href = '/logout'>click here to logout</a></b>"
+    #return "You are not logged in <br><a href = '/login'></b>" + "click here to login</b></a>"
 
 
 @app.route('/test/')
@@ -121,9 +113,9 @@ def analyst():
 
 @app.route('/account/')
 def account():
-    session.get('email')
+    email = session.get('email')
     users = mongo.db.users
-    user = users.find_one({'email': session['email']})
+    user = users.find_one({'email': email})
     name = user['name']
     address = user['address']
     mobile = user['mobile']
@@ -132,20 +124,22 @@ def account():
 
 @app.route('/edit_account/', methods=['GET', 'POST'])
 def edit_account():
-    session.get('email')
+    email = session.get('email')
     users = mongo.db.users
-    user = users.find_one({'email': session['email']})
+    user = users.find_one({'email': email})
     name = user['name']
     address = user['address']
     mobile = user['mobile']
     if request.method == 'POST':
         if user:
             hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
-            users.find_one_and_update({'email': session['email']}, {'$set': {'name': request.form['name'], 'email': request.form['email'], 'password': hashpass,
-                              'address': request.form['address'], 'mobile': request.form['mobile']}})
+            users.find_one_and_update({'email': session['email']}, {
+                '$set': {'name': request.form['name'], 'email': request.form['email'], 'password': hashpass,
+                         'address': request.form['address'], 'mobile': request.form['mobile']}})
             session['email'] = request.form['email']
             return redirect(url_for('home'))
     return render_template("edit_account_page.html", name=name, address=address, mobile=mobile)
+
 
 @app.route('/delete_account/', methods=['GET', 'POST'])
 def delete_account():
@@ -154,8 +148,11 @@ def delete_account():
         user = users.find_one({'email': session['email']})
         if user:
             users.delete_one({'email': session['email']})
+            session.pop('email', None)
+            flash('Account Successfully Deleted!', category='success')
             return redirect(url_for('home'))
     return redirect(url_for('home'))
+
 
 @app.route('/checkout/')
 def checkout():
@@ -192,13 +189,13 @@ def menu():
 
 
 if __name__ == '__main__':
-    app.secret_key = 'secret'
+    #app.secret_key = 'secret'
     app.run(debug=True, port=3000)
 else:
     from random import SystemRandom
     import string
 
-    app.secret_key = ''.join(
-        SystemRandom().choice(string.ascii_letters + string.digits) \
-        for _ in range(32)
-    )
+    #app.secret_key = ''.join(
+        #SystemRandom().choice(string.ascii_letters + string.digits) \
+        #for _ in range(32)
+    #)
