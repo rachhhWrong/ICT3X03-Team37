@@ -1,9 +1,14 @@
 from flask import *
+from flask import Flask, redirect, request, render_template, jsonify
 
 from website import auth
 from website.models import *
 import os
 import bcrypt
+import stripe
+
+stripe.api_key = 'sk_test_51LyrlYDkn7CDktELAXteTo9GDPzeeDDG8vNEnDaU7MttLaEYrPyXLjHtXcBtlAiXDX8RUUWqcONKPsDRJv0miTYS00bf8yHq4N'
+domain_url = "http://127.0.0.1:5000/"
 
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
 app.config["SESSION_PERMANENT"] = False
@@ -20,7 +25,6 @@ def favicon():
 def home():
     session.get('username')
     return render_template("home.html")
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -46,11 +50,9 @@ def register():
 
     return render_template("register.html")
 
-
 @app.route('/analyst_login')
 def analyst_login():
     return render_template("analyst_login.html")
-
 
 # to remove
 @app.route('/sss')
@@ -85,14 +87,11 @@ def login():
 
     return render_template("login.html", boolean=True)
 
-
-
 # pseudocode dont erase
 # if analyst_user:
 #     if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
 #         session['username'] = request.form['username']
 #         return redirect(url_for('analyst'))
-
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -103,7 +102,6 @@ def logout():
     # print(session['username'])
     return redirect('/')
 
-
 @app.route('/navbar')
 def nav_logout():
     if 'email' in session:
@@ -111,41 +109,21 @@ def nav_logout():
         return 'Logged in as ' + email + '<br>' + "<b><a href = '/logout'>click here to logout</a></b>"
     return "You are not logged in <br><a href = '/login'></b>" + "click here to login</b></a>"
 
-
-@app.route('/test/')
-def test():
-    return render_template("test.html")
-
-
 @app.route('/analyst/')
 def analyst():
     return render_template("data_analyst_page.html")
-
 
 @app.route('/account/')
 def account():
     return render_template("account_page.html")
 
-
 @app.route('/edit_account')
 def edit_account():
     return render_template("edit_account_page.html")
 
-
-@app.route('/checkout/')
-def checkout():
-    return render_template("checkout.html")
-
-
-@app.route('/cart/')
-def cart():
-    return render_template("cart.html")
-
-
 @app.route('/about-us/')
 def about():
     return render_template("about.html")
-
 
 @app.route('/all-products/')
 def allproducts():
@@ -153,13 +131,57 @@ def allproducts():
     findproduct = allproducts.find()
     return render_template("all_products.html", allproducts=findproduct)
 
-@app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
+@app.route('/indiv-product/id=<int:id>')
 def showgood(id):
     product = mongo.db.products
     retrieve_product = product.find_one({'product_id':id})
     return render_template("indiv_product.html", product=retrieve_product)
 
+@app.route('/indiv-product/id=<int:id>', methods=['POST'])
+def addToCart(id):
+    if request.method == 'POST':
+        product = mongo.db.products
+        retrieve_product = product.find_one({'product_id':id})
+        user = mongo.db.users
+        retrieve_userid = user.find_one({'_id':'uid'})
+        if 'email' in session:
+            email = session['email']
+    
+    return render_template("indiv_product.html", product=retrieve_product)
 
+@app.route('/cart/')
+def cart():
+    return render_template("cart.html")
+
+@app.route('/checkout/')
+def checkout():
+    return render_template("checkout.html")
+
+@app.route('/create-checkout-session', methods=['POST'])
+def create_checkout_session():
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[{
+                "price": "price_1LzFdTDkn7CDktELuFm41FkU",
+                "quantity": 1,
+            }],
+            mode='payment',
+            success_url=domain_url + "success",
+            cancel_url=domain_url + "cancel",
+        )
+    except Exception as e:
+        return str(e)
+
+    return redirect(checkout_session.url, code=303)
+
+@app.route("/success")
+def success():
+    return render_template("success.html")
+
+
+@app.route("/cancel")
+def cancelled():
+    return render_template("cancel.html")
 
 if __name__ == '__main__':
     app.secret_key = 'secret'
