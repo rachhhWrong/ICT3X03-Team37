@@ -23,7 +23,7 @@ def favicon():
 
 @app.route('/')
 def home():
-    session.get('username')
+    session.get('email')
     return render_template("home.html")
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -96,9 +96,7 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('email', None)
-    session.pop('name', None)
-    session.pop('address', None)
-    session.pop('mobile', None)
+    flash('Successfully Logged Out', category='success')
     # print(session['username'])
     return redirect('/')
 
@@ -117,9 +115,42 @@ def analyst():
 def account():
     return render_template("account_page.html")
 
-@app.route('/edit_account')
+
+@app.route('/account/edit_account/')
 def edit_account():
     return render_template("edit_account_page.html")
+
+
+@app.route('/checkout/')
+def checkout():
+    return render_template("checkout.html")
+
+
+@app.route('/cart/')
+def cart():
+    if 'email' not in session:
+        flash("Please login first!", category='error')
+        return render_template("login.html")
+    #allproducts = mongo.db.products
+    #findproduct = allproducts.find()
+    #allCart = mongo.db.cart
+    #findCart = allCart.find()
+    return render_template("cart.html")
+
+ 
+    
+
+@app.route('/addToCart', methods=['GET', 'POST'])
+def addToCart():
+    allproducts = mongo.db.products
+    findproduct = allproducts.find()
+    if 'email' not in session:
+        flash("Please login first!")
+        return render_template("login.html", category='error')
+    else:
+        quantity = request.form.get('quantity')
+        flash(quantity)
+        return render_template("all_products.html", allproducts=findproduct)
 
 @app.route('/about-us/')
 def about():
