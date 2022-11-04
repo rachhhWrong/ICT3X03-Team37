@@ -126,14 +126,20 @@ def cart():
     if 'email' not in session:
         flash("Please login first!", category='error')
         return render_template("login.html")
-    #allproducts = mongo.db.products
-    #findproduct = allproducts.find()
-    #allCart = mongo.db.cart
-    #findCart = allCart.find()
-    return render_template("cart.html")
+    #Gets userID of user logged in
+    users = mongo.db.users
+    user_email = session['email']
+    userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+    #Clean retrieved userId
+    strUserId = str(userId)
+    clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
+    #flash(clean_userId) #for testing remove later
 
- 
-    
+    userCart = mongo.db.cart
+    cart = userCart.find( { 'user_id': clean_userId})
+    return render_template("cart.html", users=userId, userCart=cart)
+
+
 
 @app.route('/addToCart', methods=['GET', 'POST'])
 def addToCart():
