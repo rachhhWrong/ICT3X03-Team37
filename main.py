@@ -57,6 +57,7 @@ def analyst_login():
 def login_page():
     if 'email' in session:
         # print("Logged in as: " + session['username'])
+        session.get('email')
         return render_template("login.html")
     else:
         return render_template("login.html")
@@ -74,7 +75,8 @@ def login():
         # analyst = mongo.db.analyst
         # analyst_user = analyst.find_one({'name': request.form['username']})
         if login_user:
-            if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
+            if bcrypt.hashpw(request.form['password'].encode('utf-8'), login_user['password']) == login_user[
+                'password']:
                 session['email'] = login_user['email']
                 flash('Login Success', category='success')
                 return redirect(url_for('allproducts'))
@@ -84,7 +86,6 @@ def login():
             flash('Email does not exist', category='error')
 
     return render_template("login.html", boolean=True)
-
 
 
 # pseudocode dont erase
@@ -125,9 +126,22 @@ def account():
     return render_template("account_page.html")
 
 
-@app.route('/account/edit_account/')
+@app.route('/account/edit_account/', methods=['GET', 'POST'])
 def edit_account():
-    return render_template("edit_account_page.html")
+    session.get('email')
+    users = mongo.db.users
+    user = users.find_one({'email': session['email']})
+    name = user['name']
+    address = user['address']
+    mobile = user['mobile']
+    if request.method == 'POST':
+        if user:
+            hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
+            users.find_one_and_update({'email': session['email']}, {'$set': {'name': request.form['name'], 'email': request.form['email'], 'password': hashpass,
+                              'address': request.form['address'], 'mobile': request.form['mobile']}})
+            session['email'] = request.form['email']
+            return redirect(url_for('home'))
+    return render_template("edit_account_page.html", name=name, address=address, mobile=mobile)
 
 
 @app.route('/checkout/')
@@ -155,7 +169,7 @@ def allproducts():
 @app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
 def showgood(id):
     product = mongo.db.products
-    retrieve_product = product.find_one({'product_id':id})
+    retrieve_product = product.find_one({'product_id': id})
     return render_template("indiv_product.html", product=retrieve_product)
 
 
