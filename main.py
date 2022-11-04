@@ -14,6 +14,21 @@ app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
 
 mongo = auth.start_mongo_client(app)
 
+@app.after_request
+def add_security_headers(response):
+    if __name__ == '__main__':
+        # only use these headers in deployment mode
+        return
+    # require HTTPS
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000'
+    # do not allow this website to be embedded inside another website
+    # prevent clickjacking attack
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    # disable content type auto-detection on browser
+    # prevents scripts or webpages being loaded through image or text
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+
+    return response
 
 @app.route('/favicon.ico')
 def favicon():
