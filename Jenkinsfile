@@ -65,12 +65,14 @@ stages {
 	stage('Deploy') {
 	steps {
 		echo "Deploying the Application"
-		withCredentials([usernamePassword(credentialsId: 'd72d3cc9-af19-4e0e-a8a3-9b83d2526e3e', passwordVariable: 'MONGO_INITDB_ROOT_PASSWORD', usernameVariable: 'MONGO_INITDB_ROOT_USERNAME')]) {
-			withCredentials([usernamePassword(credentialsId: '5d318559-a4f3-4586-acd5-504d409403e5', passwordVariable: 'MONGO_NONROOT_PASSWORD', usernameVariable: 'MONGO_NONROOT_USERNAME')]) {
+		withCredentials([
+			usernamePassword(credentialsId: 'd72d3cc9-af19-4e0e-a8a3-9b83d2526e3e', passwordVariable: 'MONGO_INITDB_ROOT_PASSWORD', usernameVariable: 'MONGO_INITDB_ROOT_USERNAME'),
+			usernamePassword(credentialsId: '5d318559-a4f3-4586-acd5-504d409403e5', passwordVariable: 'MONGO_NONROOT_PASSWORD', usernameVariable: 'MONGO_NONROOT_USERNAME'),
+			string(credentialsId: 'FLASK_SECRET_KEY', variable: 'SECRET_KEY')
+			]) {
 				dir('containers') {
-					sh "docker compose up "
+					sh "docker compose up -d"
 				}
-			}
 		}
 	}
 	post {
@@ -80,7 +82,7 @@ stages {
 		}
 		success {
 			echo "Flask Application Up and running!!"
-			
+
 			sleep 10
 			echo "Checking if containers are still running"
 			script {
@@ -93,7 +95,7 @@ stages {
 					error('Docker container error was detected')
 				}
 			}
-			
+
 			echo "Shutting down compose to save resources"
 			dir('containers') {
 				//sh "docker compose down"

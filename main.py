@@ -58,7 +58,7 @@ def register():
                 return redirect(url_for('home'))
         except Exception as e:
             print(e)
-            flash('Invalid Inputs', category='error')
+            flash('Invalid Email or Email Exist', category='error')
             return redirect(url_for('register'))
 
     return render_template("register.html")
