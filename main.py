@@ -8,6 +8,10 @@ import bcrypt
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+# never send cookies to third-party sites
+app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
+# There are more configs set for non-debug mode; see bottom of file
+
 mongo = auth.start_mongo_client(app)
 
 
@@ -168,6 +172,7 @@ if __name__ == '__main__':
     app.secret_key = 'secret'
     app.run(debug=True, port=3000)
 else:
+    # deployment mode settings
     from random import SystemRandom
     import string
 
@@ -175,3 +180,8 @@ else:
         SystemRandom().choice(string.ascii_letters + string.digits) \
         for _ in range(32)
     )
+    
+    # cookies expire after 15 minutes inactivity
+    app.config["PERMANENT_SESSION_LIFETIME"] = 900
+    # require HTTPS to load cookies
+    app.config["SESSION_COOKIE_SECURE"] = True
