@@ -6,7 +6,6 @@ import os
 import bcrypt
 
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
-app.secret_key = 'secret'
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 mongo = auth.start_mongo_client(app)
@@ -189,13 +188,13 @@ def menu():
 
 
 if __name__ == '__main__':
-    #app.secret_key = 'secret'
+    app.secret_key = 'secret'
     app.run(debug=True, port=3000)
 else:
     from random import SystemRandom
     import string
 
-    #app.secret_key = ''.join(
-        #SystemRandom().choice(string.ascii_letters + string.digits) \
-        #for _ in range(32)
-    #)
+    app.secret_key = ''.join(
+        SystemRandom().choice(string.ascii_letters + string.digits) \
+        for _ in range(32)
+    )
