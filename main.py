@@ -4,6 +4,7 @@ from website import auth
 from website.models import *
 import os
 import bcrypt
+import pyotp
 
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
 app.config["SESSION_PERMANENT"] = True
@@ -87,7 +88,7 @@ def login():
 
                 session['email'] = request.form['email']
                 flash('Login Success', category='success')
-                return redirect(url_for('allproducts'))
+                return redirect(url_for("login_2fa"))
             else:
                 flash('Login Failed', category='error')
         else:
@@ -102,6 +103,22 @@ def login():
 #         session['username'] = request.form['username']
 #         return redirect(url_for('analyst'))
 
+@app.route("/login/2fa/", methods=["POST"])
+def login_2fa_form():
+    # getting secret key used by user
+    secret = request.form.get("secret")
+    # getting OTP provided by user
+    otp = int(request.form.get("otp"))
+
+    # verifying submitted OTP with PyOTP
+    if pyotp.TOTP(secret).verify(otp):
+        # inform users if OTP is valid
+        flash("The TOTP 2FA token is valid", "success")
+        return redirect(url_for("login_2fa"))
+    else:
+        # inform users if OTP is invalid
+        flash("You have supplied an invalid 2FA token!", "danger")
+        return redirect(url_for("login_2fa"))
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
