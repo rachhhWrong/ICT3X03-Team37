@@ -5,6 +5,7 @@ from flask import *
 from datetime import datetime
 from website import auth
 from website.models import *
+from functools import wraps
 import os
 import bcrypt
 
@@ -35,6 +36,25 @@ def add_security_headers(response):
 
     return response
 
+def user_login_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'user_logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('You need to login first')
+            return redirect(url_for('login'))
+    return wrap
+
+def analyst_login_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'analyst_logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('You ned to login first')
+            return redirect(url_for('login'))
+    return wrap
 
 @app.route('/favicon.ico')
 def favicon():
@@ -59,6 +79,7 @@ def register():
                                   'address': request.form['address'], 'mobile': request.form['mobile']})
                 session.permanent = True
                 session['email'] = request.form['email']
+                session['user_logged_in'] = True
                 flash('Registered!', category='success')
                 print('registered', )
                 return redirect(url_for('home'))
@@ -83,6 +104,7 @@ def analyst_login():
                 logs.insert_one(
                     {'email': analyst_user['email'], 'date': datetime.now().strftime("%x"), 'login_time': time_in})
                 session['email'] = request.form['email']
+                session['analyst_logged_in'] = True
                 flash('Login Success', category='success')
                 return redirect(url_for("login"))
             else:
@@ -107,6 +129,7 @@ def login():
                 logs.insert_one(
                     {'email': login_user['email'], 'date': datetime.now().strftime("%x"), 'login_time': time_in})
                 session['email'] = request.form['email']
+                session['user_logged_in'] = True
                 flash('Login Success', category='success')
                 return redirect(url_for("allproducts"))
             else:
@@ -119,6 +142,8 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('email', None)
+    session.pop('user_logged_in', None)
+    session.pop('analyst_logged_in', None)
     flash('Successfully Logged Out', category='success')
     # print(session['username'])
     return redirect('/')
@@ -131,6 +156,7 @@ def test():
 
 
 @app.route('/analyst/', methods=['GET', 'POST'])
+@analyst_login_required
 def analyst():
     order = mongo.db.orders
     counter = 0
@@ -160,6 +186,7 @@ def analyst():
 
 
 @app.route('/account/')
+@user_login_required
 def account():
     email = session.get('email')
     users = mongo.db.users
@@ -171,6 +198,7 @@ def account():
 
 
 @app.route('/edit_account/', methods=['GET', 'POST'])
+@user_login_required
 def edit_account():
     email = session.get('email')
     users = mongo.db.users
@@ -190,6 +218,7 @@ def edit_account():
 
 
 @app.route('/delete_account/', methods=['GET', 'POST'])
+@user_login_required
 def delete_account():
     if request.method == 'POST':
         users = mongo.db.users
@@ -203,6 +232,7 @@ def delete_account():
 
 
 @app.route('/checkout/')
+@user_login_required
 def checkout():
     return render_template("checkout.html")
 
