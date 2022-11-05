@@ -8,6 +8,12 @@ from website.models import *
 from functools import wraps
 import os
 import bcrypt
+import stripe
+import pymongo
+from bson import ObjectId
+
+stripe.api_key = 'sk_test_51LyrlYDkn7CDktELAXteTo9GDPzeeDDG8vNEnDaU7MttLaEYrPyXLjHtXcBtlAiXDX8RUUWqcONKPsDRJv0miTYS00bf8yHq4N'
+domain_url = "http://127.0.0.1:5000/"
 
 
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
@@ -231,15 +237,22 @@ def delete_account():
     return redirect(url_for('home'))
 
 
-@app.route('/checkout/')
-@user_login_required
-def checkout():
-    return render_template("checkout.html")
-
-
 @app.route('/cart/')
 def cart():
-    return render_template("cart.html")
+    if 'email' not in session:
+        flash("Please login first!", category='error')
+        return render_template("login.html")
+    #Gets userID of user logged in
+    users = mongo.db.users
+    user_email = session['email']
+    userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+    #Clean retrieved userId
+    strUserId = str(userId)
+    clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
+
+    userCart = mongo.db.cart
+    cart = userCart.find( { 'user_id': clean_userId})
+    return render_template("cart.html", users=userId, userCart=cart)
 
 
 @app.route('/about-us/')
@@ -256,15 +269,157 @@ def allproducts():
 
 @app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
 def showgood(id):
+    if 'email' not in session:
+        product = mongo.db.products
+        retrieve_product = product.find_one({'product_id':id})
+        return render_template("indiv_product.html", product=retrieve_product)
+    else:
+        product = mongo.db.products
+        retrieve_product = product.find_one({'product_id':id})
+        session['product_id'] = id
+        return render_template("indiv_product.html", product=retrieve_product)
+
+
+@app.route('/addToCart', methods=['GET', 'POST'])
+def addToCart():
+    allproducts = mongo.db.products
+    findproduct = allproducts.find()
+    if 'email' not in session:
+        flash("Please login first!", category='error')
+        return render_template("login.html")
+    else:
+        #connecting to tables
+        users = mongo.db.users
+        userCart = mongo.db.cart
+        #Retrieving and cleaning user ID based on email stored in session
+        user_email = session['email']
+        userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+        strUserId = str(userId)
+        clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
+        #Get quantity of product to add
+        quantity = request.form.get('quantity')
+        #Get ProductID for query
+        productId = session['product_id']
+        #Cleaning of Product name, price
+        productName = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_name': 1})
+        C_productName = str(productName).replace("{'product_name': '", "").replace("'}", '')
+        productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
+        C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
+        #Insert into DB
+        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
+        return render_template("all_products.html", allproducts=findproduct)
+
+@app.route('/removeFromCart')
+def removeFromCart():
+    userCart = mongo.db.cart
+    users = mongo.db.users
+    user_email = session['email']
+    userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+    strUserId = str(userId)
+    clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
+    productId = request.args.get('productId')
+    userCart.delete_one({'user_id': clean_userId, 'product_id': productId})
+    return redirect(url_for('cart'))
+
+
+@app.route('/checkout/')
+def displayCart():
+
+    user = mongo.db.users
+    cart = mongo.db.cart
+    order = mongo.db.orders
     product = mongo.db.products
-    retrieve_product = product.find_one({'product_id': id})
-    return render_template("indiv_product.html", product=retrieve_product)
+
+    loginuserid = "6364c1b91b3c2c688f6b73ab"
+    price_id = ""
+
+    #find totalamount for each user in cartdb
+    price = cart.aggregate([{"$group":{"_id":"$user_id","totalAmount": {"$sum":{"$multiply":["$product_price", "$product_quantity"]}}, "count":{"$sum":"1"}}}])
+
+    #find user id from the current session and cart
+    retrieve_cart = cart.find({"user_id":loginuserid})
+
+    #Clean retrieved cart
+    strOrderDetails = str(list(price))
+
+    #extract user_id and totalamount value only
+    clean_orderDetails = strOrderDetails.replace("[{'_id': '", "")
+    clean_orderDetails1 = clean_orderDetails.replace("', 'totalAmount': ", " ")
+    clean_orderDetails2 = clean_orderDetails1.replace(", 'count': 0}, {'_id': '", " ")
+    clean_orderDetails3 = clean_orderDetails2.replace(", 'count': 0}]", " ")
+
+    #split user_id and totalvalue into 2 value for prepratation of insertion into order db
+    split_details = clean_orderDetails3.split( )
+    for userid,total in zip(split_details[0::2], split_details[1::2]):
+
+        #retrieve name from user db and clean
+        retrieve_user = user.find_one({ '_id':ObjectId(userid) }, { 'name': 1, '_id': 0})
+        userdetails= str(retrieve_user)
+        clean_username = userdetails.replace("{'name': '", "")
+        clean_username1 = clean_username.replace("'}", "")
+
+        #find all products id for each user in cartdb
+        allproducts_details = cart.find({'user_id':userid}, {'product_id':1,'product_quantity':1, '_id':0})
+
+        for productdetail in allproducts_details:
+            #extract prod_id and quantity value only and clean
+            productdetailStr = str(productdetail)
+            clean_productdetail = productdetailStr.replace("{'product_id': '", "")
+            clean_productdetail1 = clean_productdetail.replace("', 'product_quantity':", "")
+            clean_productdetail2 = clean_productdetail1.replace("}", "")
+
+            #split prod_id and quantity into 2 value for prepratation of insertion into order db
+            split_productdetails = clean_productdetail2.split( )
+            for prodid,quantity in zip(split_productdetails[0::2], split_productdetails[1::2]):
+                #insert user_id, name and totalprice into order db
+                order.insert_one({'user_id':userid,'name': clean_username1,'total_amount': total, "order_time": datetime.now(), 'order': {'product_id': prodid, 'product_quantity': quantity}})
+
+                #find price_id
+                retrieve_priceid = product.find({'product_id':prodid},{'price_id':1, '_id':0})
+                for priceid in retrieve_priceid:
+                    priceidStr = str(priceid)
+                    clean_priceid = priceidStr.replace("{'price_id': '", "")
+                    clean_priceid1 = clean_priceid.replace("'}", "")
+
+                    productslist={'price': '', 'quantity': '', }
+                    productslist["price"]=clean_priceid1
+                    productslist["quantity"]=quantity
+
+                    #flash(productslist)
+
+    #retrieve total
+    retrieve_total = order.find_one({'user_id':loginuserid})
+
+    return render_template("checkout.html", order=retrieve_total, cart=retrieve_cart)
 
 
-@app.route('/menu/')
-def menu():
-    return render_template("menu.html")
+@app.route('/create-checkout-session', methods=['POST'])
+def create_checkout_session():
 
+    try:
+
+        productslist={'price': 'price_1LzHWUDkn7CDktELXGaYF398', 'quantity': '1',}
+        productslist1={'price': 'price_1M0R2BDkn7CDktELlg1CQOGi', 'quantity': '2'}
+
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[productslist, productslist1],
+            mode='payment',
+            success_url=domain_url + "success",
+            cancel_url=domain_url + "cancel",
+        )
+    except Exception as e:
+        return str(e)
+
+    return redirect(checkout_session.url, code=303)
+
+@app.route("/success")
+def success():
+    return render_template("success.html")
+
+
+@app.route("/cancel")
+def cancelled():
+    return render_template("cancel.html")
 
 if __name__ == '__main__':
     app.secret_key = 'secret'
