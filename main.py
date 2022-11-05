@@ -133,25 +133,11 @@ def cart():
     #Clean retrieved userId
     strUserId = str(userId)
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
-    #flash(clean_userId) #for testing remove later
 
     userCart = mongo.db.cart
     cart = userCart.find( { 'user_id': clean_userId})
     return render_template("cart.html", users=userId, userCart=cart)
 
-
-
-@app.route('/addToCart', methods=['GET', 'POST'])
-def addToCart():
-    allproducts = mongo.db.products
-    findproduct = allproducts.find()
-    if 'email' not in session:
-        flash("Please login first!")
-        return render_template("login.html", category='error')
-    else:
-        quantity = request.form.get('quantity')
-        flash(quantity)
-        return render_template("all_products.html", allproducts=findproduct)
 
 @app.route('/about-us/')
 def about():
@@ -163,23 +149,47 @@ def allproducts():
     findproduct = allproducts.find()
     return render_template("all_products.html", allproducts=findproduct)
 
-@app.route('/indiv-product/id=<int:id>')
+@app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
 def showgood(id):
-    product = mongo.db.products
-    retrieve_product = product.find_one({'product_id':id})
-    return render_template("indiv_product.html", product=retrieve_product)
-
-@app.route('/indiv-product/id=<int:id>', methods=['POST'])
-def addToCart1(id):
-    if request.method == 'POST':
+    if 'email' not in session:
         product = mongo.db.products
         retrieve_product = product.find_one({'product_id':id})
-        user = mongo.db.users
-        retrieve_userid = user.find_one({'_id':'uid'})
-        if 'email' in session:
-            email = session['email']
-    
-    return render_template("indiv_product.html", product=retrieve_product)
+        return render_template("indiv_product.html", product=retrieve_product)
+    else:
+        product = mongo.db.products
+        retrieve_product = product.find_one({'product_id':id})
+        session['product_id'] = id
+        return render_template("indiv_product.html", product=retrieve_product)
+        
+
+@app.route('/addToCart', methods=['GET', 'POST'])
+def addToCart():
+    allproducts = mongo.db.products
+    findproduct = allproducts.find()
+    if 'email' not in session:
+        flash("Please login first!", category='error')
+        return render_template("login.html")
+    else:
+        #connecting to tables
+        users = mongo.db.users
+        userCart = mongo.db.cart
+        #Retrieving and cleaning user ID based on email stored in session
+        user_email = session['email']
+        userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+        strUserId = str(userId)
+        clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
+        #Get quantity of product to add
+        quantity = request.form.get('quantity')
+        #Get ProductID for query
+        productId = session['product_id']
+        #Cleaning of Product name, price
+        productName = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_name': 1})
+        C_productName = str(productName).replace("{'product_name': '", "").replace("'}", '')
+        productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
+        C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
+        #Insert into DB
+        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': C_productPrice, 'product_quantity': quantity})
+        return render_template("all_products.html", allproducts=findproduct)
 
 @app.route('/checkout/')
 def checkout():

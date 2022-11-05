@@ -37,7 +37,7 @@
                             <h1 class="text-white">{{product['product_name']}}</h1>
                         </div>
                         <p class="text-white">{{product['product_desc']}}</p>
-                        <p class="text-white">{{product['product_price']}}</p>
+                        <p class="text-white">${{product['product_price']}}</p>
                         <form class="mb-5" name="register_form" method="post", action="{{url_for('addToCart')}}">
                             <div class="form-group">
                                 <input type="number" name="quantity" class="form-control bg-transparent border-primary p-4 field" placeholder="Quantity"
