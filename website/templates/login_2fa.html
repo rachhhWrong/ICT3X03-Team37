@@ -3,84 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    {% include 'links.html' %}
+
+    <!-- links Start -->
+
+    <!-- Favicon -->
+    <link href="../static/img/favicon.ico" rel="icon">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400&family=Roboto:wght@400;500;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="../static/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="../static/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet"/>
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="../static/css/style.min.css" rel="stylesheet">
+
+    <!-- links Stop -->
+
 </head>
 <body>
-{% include 'navbar.html' %}
-{% block content %}
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-12">
-                <div class="jumbotron text-center p-4">
-                    <h2>Flask + 2FA Demo</h2>
-                    <h4>Setup and Authenticate 2FA</h4>
-                </div>
-            </div>
-            <div class="col-lg-5">
-                <form>
-                    <div>
-                        <h5>Instructions!</h5>
-                        <ul>
-                            <li>Download <a
-                                    href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&hl=en&gl=US"
-                                    target="_blank">Google Authenticator</a> on your mobile.
-                            </li>
-                            <li>Create a new account with <strong>setup key</strong> method.</li>
-                            <li>Provide the required details (name, secret key).</li>
-                            <li>Select time-based authentication.</li>
-                            <li>Submit the generated key in the form.</li>
-                        </ul>
-                    </div>
-                    <div class="form-group">
-                        <label for="secret">Secret Token</label>
-                        <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly>
-                    </div>
-                    <div class="text-center">
-                        <button type="button" class="btn btn-primary" onclick="copySecret()">Copy Secret</button>
-                    </div>
-                </form>
-            </div>
-            <div class="col-lg-7">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }}" role="alert">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-                <form method="POST">
-                    <div class="form-group">
-                        <label for="otp">Generated OTP</label>
-                        <input type="hidden" name="secret" value="{{ secret }}" required>
-                        <input type="number" class="form-control" id="otp" name="otp" required>
-                    </div>
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary">Authenticate User</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<!-- Navbar Start -->
+
+
+<div class="container-fluid p-0 nav-bar">
+    <nav style="background: #33211D;" ; class="navbar navbar-expand-lg bg-none navbar-dark py-3">
+        <a href="{{ url_for('home') }}" class="navbar-brand px-lg-4 m-0">
+            <h1 class="m-0 display-4 text-uppercase text-white">TIS Bakery</h1>
+        </a>
+        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+    </nav>
+<!-- TEST
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{session.email}}
+        <button type="button" class="close" data-dismiss="alert">
+        </button>
     </div>
+-->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, msg in messages %}
+                {% if category == 'error' %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ msg }}
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
 
-    <script>
-        function copySecret() {
-            /* Get the text field */
-            var copyText = document.getElementById("secret");
+                {% else %}
+                    <div id="al-success" class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ msg }}
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+<!-- Navbar End -->
 
-            /* Select the text field */
-            copyText.select();
-            copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-12">
+      <div class="jumbotron text-center p-4">
+        <h2>Flask + 2FA Demo</h2>
+        <h4>Setup and Authenticate 2FA</h4>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <form>
+        <div>
+          <h5>Instructions!</h5>
+          <ul>
+            <li>Download <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&hl=en&gl=US" target="_blank">Google Authenticator</a> on your mobile.</li>
+            <li>Create a new account with <strong>setup key</strong> method.</li>
+            <li>Provide the required details (name, secret key).</li>
+            <li>Select time-based authentication.</li>
+            <li>Submit the generated key in the form.</li>
+          </ul>
+        </div>
+        <div class="form-group">
+          <label for="secret">Secret Token</label>
+          <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly>
+        </div>
+        <div class="text-center">
+          <button type="button" class="btn btn-primary" onclick="copySecret()">Copy Secret</button>
+        </div>
+      </form>
+    </div>
+    <div class="col-lg-7">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" role="alert">
+        {{ message }}
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
+      <form method="POST">
+        <div class="form-group">
+          <label for="otp">Generated OTP</label>
+          <input type="hidden" name="secret" value="{{ secret }}" required>
+          <input type="number" class="form-control" id="otp" name="otp" required>
+        </div>
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary">Authenticate User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
-            /* Copy the text inside the text field */
-            document.execCommand("copy");
+<script>
+  function copySecret() {
+    /* Get the text field */
+    var copyText = document.getElementById("secret");
 
-            alert("Successfully copied TOTP secret token!");
-        }
-    </script>
-{% include 'footer.html' %}
+    /* Select the text field */
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+
+    /* Copy the text inside the text field */
+    document.execCommand("copy");
+
+    alert("Successfully copied TOTP secret token!");
+  }
+</script>
 {% endblock %}
+{% include 'footer.html' %}
 </body>
-
 </html>
