@@ -14,8 +14,9 @@ import pymongo
 from bson import ObjectId
 
 stripe.api_key = 'sk_test_51LyrlYDkn7CDktELAXteTo9GDPzeeDDG8vNEnDaU7MttLaEYrPyXLjHtXcBtlAiXDX8RUUWqcONKPsDRJv0miTYS00bf8yHq4N'
-domain_url = "http://127.0.0.1:5000/"
-
+#domain_url = "http://127.0.0.1:5000/"
+domain_url = "https://bakes.tisbakery.ml/"
+line_items1=[]
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
@@ -377,6 +378,7 @@ def removeFromCart():
 
 
 @app.route('/checkout/')
+@app.route('/create-checkout-session', methods=['POST'])
 def checkout():
     user = mongo.db.users
     cart = mongo.db.cart
@@ -445,40 +447,52 @@ def checkout():
                         productslist["price"]=clean_priceid1
                         productslist["quantity"]=quantity
 
-                        #flash(productslist)
+                    line_items1.append(productslist)
+                    flash(line_items1)
+                try:
+                        #productslist = {'price': 'price_1LzHWUDkn7CDktELXGaYF398', 'quantity': '1', }
+                        #productslist1 = {'price': 'price_1M0R2BDkn7CDktELlg1CQOGi', 'quantity': '2'}
 
+                    checkout_session = stripe.checkout.Session.create(
+                    line_items=line_items1,
+                    mode='payment',
+                    success_url=domain_url + "success",
+                    cancel_url=domain_url + "cancel",
+                    )
+                except Exception as e:
+                    return str(e)
+
+    #return redirect(checkout_session.url, code=303, CSRFToken=session.get('CSRFToken'))
+                return redirect(checkout_session.url, code=303)
         #retrieve total
         retrieve_total = order.find_one({'user_id':loginuserid})
 
         return render_template("checkout.html", order=retrieve_total, cart=retrieve_cart, CSRFToken=session.get('CSRFToken'))
 
 
-@app.route('/create-checkout-session', methods=['POST'])
-def create_checkout_session():
-    try:
-
-        productslist = {'price': 'price_1LzHWUDkn7CDktELXGaYF398', 'quantity': '1', }
-        productslist1 = {'price': 'price_1M0R2BDkn7CDktELlg1CQOGi', 'quantity': '2'}
-
-        checkout_session = stripe.checkout.Session.create(
-            line_items=[productslist, productslist1],
-            mode='payment',
-            success_url=domain_url + "success",
-            cancel_url=domain_url + "cancel",
-        )
-    except Exception as e:
-        return str(e)
-
-    return redirect(checkout_session.url, code=303, CSRFToken=session.get('CSRFToken'))
-
-
 @app.route("/success")
 def success():
+    if 'email' not in session:
+        flash("Please login first!", category='error')
+        return render_template("login.html")
+    else:
+        user_email = session['email']
+        userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+        strUserId = str(userId)
+        loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
     return render_template("success.html")
 
 
 @app.route("/cancel")
 def cancelled():
+    if 'email' not in session:
+        flash("Please login first!", category='error')
+        return render_template("login.html")
+    else:
+        user_email = session['email']
+        userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+        strUserId = str(userId)
+        loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
     return render_template("cancel.html")
 
 
