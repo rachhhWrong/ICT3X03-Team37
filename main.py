@@ -1,3 +1,5 @@
+import json
+
 import pyotp
 from flask import *
 from datetime import datetime
@@ -114,15 +116,6 @@ def login():
 
     return render_template("login.html", boolean=True)
 
-
-# pseudocode dont erase
-# if analyst_user:
-#     if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
-#         session['username'] = request.form['username']
-#         return redirect(url_for('analyst'))
-
-
-
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('email', None)
@@ -137,9 +130,21 @@ def test():
     return render_template("test.html")
 
 
-@app.route('/analyst/')
+@app.route('/analyst/', methods=['GET', 'POST'])
 def analyst():
-    return render_template("data_analyst_page.html")
+    logs = mongo.db.logs
+    counter = 0
+    log_arr = []
+    log_big_arr = []
+    for i in logs.find():
+        counter += 1
+        log_arr.append(counter)
+        log_arr.append(str(i['email']))
+        log_arr.append(str(i['date']))
+        log_arr.append(str(i['login_time']))
+        log_big_arr.append(log_arr)
+        log_arr = []
+    return render_template("data_analyst_page.html", log_arr=log_arr, log_big_arr=log_big_arr)
 
 
 @app.route('/account/')
