@@ -283,10 +283,8 @@ def delete_account():
 
 
 @app.route('/cart/')
+@user_login_required
 def cart():
-    # if 'email' not in session:
-    # flash("Please login first!", category='error')
-    # return render_template("login.html")
     # Gets userID of user logged in
     users = mongo.db.users
     user_email = session.get('email')
@@ -326,43 +324,40 @@ def showgood(id):
         
 
 @app.route('/addToCart', methods=['GET', 'POST'])
+@user_login_required
 def addToCart():
+    #connecting to tables
     allproducts = mongo.db.products
+    users = mongo.db.users
+    userCart = mongo.db.cart
+
+    #Retrieving and cleaning user ID based on email stored in session
     findproduct = allproducts.find()
+    user_email = session['email']
+    userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+    strUserId = str(userId)
+    clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
-    if 'email' not in session:
-        flash("Please login first!", category='error')
-        return render_template("login.html")
-    else:
-        #connecting to tables
-        users = mongo.db.users
-        userCart = mongo.db.cart
+    #Get quantity of product to add
+    quantity = request.form.get('quantity')
 
-        #Retrieving and cleaning user ID based on email stored in session
-        user_email = session['email']
-        userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
-        strUserId = str(userId)
-        clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
+    #Get ProductID for query
+    productId = session['product_id']
 
-        #Get quantity of product to add
-        quantity = request.form.get('quantity')
-
-        #Get ProductID for query
-        productId = session['product_id']
-
-        #Cleaning of Product name, price
-        productName = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_name': 1})
-        C_productName = str(productName).replace("{'product_name': '", "").replace("'}", '')
-        productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
-        C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
-        productPrice = int(C_productPrice)
-        
-        #Insert into DB
-        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': productPrice, 'product_quantity': int(quantity)})
-        return render_template("all_products.html", allproducts=findproduct, CSRFToken=session.get('CSRFToken'))
+    #Cleaning of Product name, price
+    productName = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_name': 1})
+    C_productName = str(productName).replace("{'product_name': '", "").replace("'}", '')
+    productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
+    C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
+    productPrice = int(C_productPrice)
+    
+    #Insert into DB
+    userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': productPrice, 'product_quantity': int(quantity)})
+    return render_template("all_products.html", allproducts=findproduct, CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/removeFromCart')
+@user_login_required
 def removeFromCart():
     userCart = mongo.db.cart
     users = mongo.db.users
