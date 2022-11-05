@@ -168,6 +168,8 @@ def analyst_login():
 def login():
     users = mongo.db.users
     logs = mongo.db.logs
+    if session.get('analyst_logged_in'):
+        return redirect(url_for("home"))
     if request.method == 'POST':
         login_user = users.find_one({'email': request.form['email']})
         if login_user:
