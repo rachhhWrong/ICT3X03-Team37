@@ -82,7 +82,7 @@ def analyst_login():
                     {'email': analyst_user['email'], 'date': datetime.now().strftime("%x"), 'login_time': time_in})
                 session['email'] = request.form['email']
                 flash('Login Success', category='success')
-                return redirect(url_for("login_2fa"))
+                return redirect(url_for("login"))
             else:
                 flash('Login Failed', category='error')
         else:
@@ -106,7 +106,7 @@ def login():
                     {'email': login_user['email'], 'date': datetime.now().strftime("%x"), 'login_time': time_in})
                 session['email'] = request.form['email']
                 flash('Login Success', category='success')
-                return redirect(url_for("login_2fa"))
+                return redirect(url_for("allproducts"))
             else:
                 flash('Login Failed', category='error')
         else:
