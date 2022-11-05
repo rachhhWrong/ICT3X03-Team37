@@ -1,17 +1,20 @@
-import pyotp
 from flask import *
+
 from datetime import datetime
+
 from website import auth
+from website.email import send_email
 from website.models import *
 import os
 import bcrypt
 
-
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
+
 # never send cookies to third-party sites
 app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
+
 # There are more configs set for non-debug mode; see bottom of file
 
 mongo = auth.start_mongo_client(app)
@@ -50,20 +53,25 @@ def register():
     if request.method == 'POST':
         users = mongo.db.users
         existing_users = users.find_one({"email": request.form['email']})
+        email = request.form['email']
         try:
             if existing_users is None:
                 hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
+
                 users.insert_one({'name': request.form['name'], 'email': request.form['email'], 'password': hashpass,
                                   'address': request.form['address'], 'mobile': request.form['mobile']})
-                session.permanent = True
-                session['email'] = request.form['email']
-                flash('Registered!', category='success')
-                print('registered', )
-                return redirect(url_for('home'))
+
+            verify_user = users.find_one({"email": request.form['email']})
+            if verify_user:
+                send_email(email, "confirm_email", 1)
+                flash('Please check your email to confirm verification!', category='success')
+
+                return redirect(url_for('login'))
         except Exception as e:
             print(e)
-            flash('Invalid Email or Email Exist', category='error')
+            flash('Invalid Inputs', category='error')
             return redirect(url_for('register'))
+
 
     return render_template("register.html")
 
@@ -89,7 +97,6 @@ def analyst_login():
             flash('Account does not exist', category='error')
 
     return render_template("analyst_login.html")
-
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -122,14 +129,12 @@ def login():
 #         return redirect(url_for('analyst'))
 
 
-
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('email', None)
     flash('Successfully Logged Out', category='success')
     # print(session['username'])
     return redirect('/')
-
 
 
 @app.route('/test/')
