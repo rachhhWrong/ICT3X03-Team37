@@ -38,6 +38,7 @@
                                 <input type="number" name="quantity" class="form-control bg-transparent border-primary p-4 field" placeholder="Quantity"
                                     required="required" />
                             </div>
+                            <input type="hidden" class="form-control" name="CSRFToken" value="{{ CSRFToken }}" readonly>
                             <p class="error error--hidden"></p>
                             <div>
                                 <button class="btn btn-primary btn-block font-weight-bold py-3" type="submit" id="add-button">Add to Cart</button>
