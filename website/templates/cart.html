@@ -28,42 +28,28 @@
         <div class="container">
             <div class="reservation position-relative overlay-top overlay-bottom">
                 <div class="row align-items-center">
-                    {% for products in }
+                    {% for item in userCart %}
                     <div class="col-lg-6 my-5 my-lg-0">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                             <div class="text-center p-5">
-                                <img class="img-fluid" src="../static/img/bg.jpg" alt="">            
+                                <img class="img-fluid" src="../static/img/{{item['product_id']}}.jpg" alt="">             
                             </div>
 						</div>
 					</div>
                     <div class="col-lg-6">          
                         <div class="text-center p-5">
                             <div class="mb-4">
-                                <h1 class="text-white">Bread 1</h1>
-                                <p class="text-white">$1000</p>
-                                <p class="text-white">Quantity: 1</p>
-                                <button type="button" class="btn btn-danger btn-xs">Remove from Cart</button></a>
+                                <h1 class="text-white">{{ item['product_name'] }}</h1>
+                                <h6 class = text-white>${{ item['product_price'] }}</h6>                               
+                                <h6 class="text-white">Quantity: {{ item['product_quantity'] }}</h6>
+                                <a href="/removeFromCart?productId={{ item['product_id'] }}">Remove</a>
+                                <!--<form class="{{url_for('removeFromCart')}}">
+                                    <button class="btn btn-primary btn-sm " type="submit">Remove Product</button>
+                                </form>-->
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-6 my-5 my-lg-0">
-						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                            <div class="text-center p-5">
-                                <img class="img-fluid" src="../static/img/bg.jpg" alt="">            
-                            </div>
-						</div>
-					</div>
-                    <div class="col-lg-6">          
-                        <div class="text-center p-5">
-                            <div class="mb-4">
-                                <h1 class="text-white">Bread 2</h1>
-                                <p class="text-white">$69</p>
-                                <p class="text-white">Quantity: 666</p>
-                                <button type="button" class="btn btn-danger btn-xs">Remove from Cart</button></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    {% endfor %}
                 <div class="col text-center">
                     <hr class="mb-4">
                     <form action="{{url_for('checkout')}}">
@@ -75,7 +61,6 @@
         </div>
     </div>
     <!-- Cart End -->
-
         {% include 'footer.html' %}
 </body>
 </html>
