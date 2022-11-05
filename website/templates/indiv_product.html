@@ -31,18 +31,6 @@
                         <div class="p-5">
                             <img class="img-fluid" src="../static/img/{{product['product_id']}}.jpg" alt="">
                         </div>
-                        <p class="text-white">{{product['product_desc']}}</p>
-                        <p class="text-white">${{product['product_price']}}</p>
-                        <form class="mb-5" name="register_form" method="post", action="{{url_for('addToCart')}}">
-                            <div class="form-group">
-                                <input type="number" name="quantity" class="form-control bg-transparent border-primary p-4 field" placeholder="Quantity"
-                                    required="required" />
-                            </div>
-                            <p class="error error--hidden"></p>
-                            <div>
-                                <button class="btn btn-primary btn-block font-weight-bold py-3" type="submit" id="add-button">Add to Cart</button>
-                            </div>
-                        </form>
                     </div>
                     <div class="col-lg-6">
                         <div class="text-center p-5" style="background: rgba(51, 33, 29, .8);">
@@ -50,7 +38,7 @@
                                 <h1 class="text-white">{{product['product_name']}}</h1>
                             </div>
                             <p class="text-white">{{product['product_desc']}}</p>
-                            <p class="text-white">{{product['product_price']}}</p>
+                            <p class="text-white">${{product['product_price']}}</p>
                             <form class="mb-5" name="register_form" method="post" , action="{{url_for('addToCart')}}">
                                 <div class="form-group">
                                     <input type="number" name="quantity"
@@ -60,7 +48,7 @@
                                 <p class="error error--hidden"></p>
                                 <div>
                                     <button class="btn btn-primary btn-block font-weight-bold py-3" type="submit"
-                                        id="add-button">Add to Cart</button>
+                                        id="addcart-button">Add to Cart</button>
                                 </div>
                             </form>
                         </div>
