@@ -2,6 +2,7 @@ import json
 
 import pyotp
 from flask import *
+from flask import Flask, redirect, request, render_template, jsonify
 from datetime import datetime
 from website import auth
 from website.models import *
@@ -126,7 +127,6 @@ def register():
                 hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
                 users.insert_one({'name': request.form['name'], 'email': request.form['email'], 'password': hashpass,
                                   'address': request.form['address'], 'mobile': request.form['mobile']})
-                session.permanent = True
                 session['email'] = request.form['email']
                 session['user_logged_in'] = True
                 flash('Registered!', category='success')
@@ -179,20 +179,15 @@ def login():
                 session['email'] = request.form['email']
                 session['user_logged_in'] = True
                 flash('Login Success', category='success')
-                return redirect(url_for("allproducts"))
+                return redirect(url_for('allproducts'))
             else:
                 flash('Login Failed', category='error')
         else:
-            flash('Account does not exist', category='error')
+            flash('Email does not exist', category='error')
 
-    return render_template("login.html", boolean=True, CSRFToken=session.get('CSRFToken'))
+    return render_template("login.html", boolean=True)
 
 
-# pseudocode dont erase
-# if analyst_user:
-#     if bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password']:
-#         session['username'] = request.form['username']
-#         return redirect(url_for('analyst'))
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -287,7 +282,7 @@ def delete_account():
     return redirect(url_for('home'))
 
 
-@app.route('/cart/', )
+@app.route('/cart/')
 def cart():
     # if 'email' not in session:
     # flash("Please login first!", category='error')
@@ -302,8 +297,7 @@ def cart():
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
     userCart = mongo.db.cart
-    cart = userCart.find({'user_id': clean_userId})
-
+    cart = userCart.find({ 'user_id': clean_userId})
     return render_template("cart.html", users=userId, userCart=cart)
 
 
@@ -318,52 +312,52 @@ def allproducts():
     findproduct = allproducts.find()
     return render_template("all_products.html", allproducts=findproduct)
 
-
-@app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
+@app.route('/indiv-product/id=<id>', methods=['GET', 'POST'])
 def showgood(id):
-    if request.methods == "POST":
-        if 'email' not in session:
-            product = mongo.db.products
-            retrieve_product = product.find_one({'product_id': id})
-            return render_template("indiv_product.html", product=retrieve_product)
-        else:
-            product = mongo.db.products
-            retrieve_product = product.find_one({'product_id': id})
-            session['product_id'] = id
-            return render_template("indiv_product.html", product=retrieve_product)
-
-    return render_template("indiv_product.html")
-
+    if 'email' not in session:
+        product = mongo.db.products
+        retrieve_product = product.find_one({'product_id':id})
+        return render_template("indiv_product.html", product=retrieve_product)
+    else:
+        product = mongo.db.products
+        retrieve_product = product.find_one({'product_id':id})
+        session['product_id'] = id
+        return render_template("indiv_product.html", product=retrieve_product)
+        
 
 @app.route('/addToCart', methods=['GET', 'POST'])
 def addToCart():
     allproducts = mongo.db.products
     findproduct = allproducts.find()
+
     if 'email' not in session:
         flash("Please login first!", category='error')
         return render_template("login.html")
     else:
-        # connecting to tables
+        #connecting to tables
         users = mongo.db.users
         userCart = mongo.db.cart
-        # Retrieving and cleaning user ID based on email stored in session
+
+        #Retrieving and cleaning user ID based on email stored in session
         user_email = session['email']
-        userId = users.find_one({'email': user_email},
-                                {'_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0})
+        userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
         strUserId = str(userId)
         clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
-        # Get quantity of product to add
+
+        #Get quantity of product to add
         quantity = request.form.get('quantity')
-        # Get ProductID for query
+
+        #Get ProductID for query
         productId = session['product_id']
-        # Cleaning of Product name, price
-        productName = allproducts.find_one({'product_id': productId}, {'_id': 0, 'product_name': 1})
+
+        #Cleaning of Product name, price
+        productName = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_name': 1})
         C_productName = str(productName).replace("{'product_name': '", "").replace("'}", '')
-        productPrice = allproducts.find_one({'product_id': productId}, {'_id': 0, 'product_price': 1})
+        productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
         C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
-        # Insert into DB
-        userCart.insert_one({'user_id': clean_userId, 'product_id': productId, 'product_name': C_productName,
-                             'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
+        productPrice = int(C_productPrice)
+        #Insert into DB
+        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': productPrice, 'product_quantity': int(quantity)})
         return render_template("all_products.html", allproducts=findproduct)
 
 
@@ -388,71 +382,77 @@ def checkout():
     order = mongo.db.orders
     product = mongo.db.products
 
-    loginuserid = "6364c1b91b3c2c688f6b73ab"
-    price_id = ""
+    if 'email' not in session:
+        flash("Please login first!", category='error')
+        return render_template("login.html")
+    else:
+        user_email = session['email']
+        userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+        strUserId = str(userId)
+        loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
-    # find totalamount for each user in cartdb
-    price = cart.aggregate([{"$group": {"_id": "$user_id",
-                                        "totalAmount": {"$sum": {"$multiply": ["$product_price", "$product_quantity"]}},
-                                        "count": {"$sum": "1"}}}])
 
-    # find user id from the current session and cart
-    retrieve_cart = cart.find({"user_id": loginuserid})
+        #loginuserid = "6364c1b91b3c2c688f6b73ab"
 
-    # Clean retrieved cart
-    strOrderDetails = str(list(price))
+        #find totalamount for each user in cartdb
+        price = cart.aggregate([{"$group":{"_id":loginuserid,"total_amount": {"$sum":{"$multiply":["$product_price", "$product_quantity"]}}}}])
+        #price = cart.aggregate([{'$group':{'_id':loginuserid,'total_amount': {'$sum':{'$multiply':['$product_price', '$product_quantity']}}, 'count':{'$sum':1}}}])
 
-    # extract user_id and totalamount value only
-    clean_orderDetails = strOrderDetails.replace("[{'_id': '", "")
-    clean_orderDetails1 = clean_orderDetails.replace("', 'totalAmount': ", " ")
-    clean_orderDetails2 = clean_orderDetails1.replace(", 'count': 0}, {'_id': '", " ")
-    clean_orderDetails3 = clean_orderDetails2.replace(", 'count': 0}]", " ")
+        #find user id from the current session and cart
+        retrieve_cart = cart.find({"user_id":loginuserid})
 
-    # split user_id and totalvalue into 2 value for prepratation of insertion into order db
-    split_details = clean_orderDetails3.split()
-    for userid, total in zip(split_details[0::2], split_details[1::2]):
+        #Clean retrieved cart
+        strOrderDetails = str(list(price))
 
-        # retrieve name from user db and clean
-        retrieve_user = user.find_one({'_id': ObjectId(userid)}, {'name': 1, '_id': 0})
-        userdetails = str(retrieve_user)
-        clean_username = userdetails.replace("{'name': '", "")
-        clean_username1 = clean_username.replace("'}", "")
+        #extract user_id and totalamount value only
+        clean_orderDetails = strOrderDetails.replace("[{'_id': '", "")
+        clean_orderDetails1 = clean_orderDetails.replace("', 'totalAmount': ", " ")
+        clean_orderDetails2 = clean_orderDetails1.replace(", 'count': 0}, {'_id': '", " ")
+        clean_orderDetails3 = clean_orderDetails2.replace(", 'count': 0}]", " ")
 
-        # find all products id for each user in cartdb
-        allproducts_details = cart.find({'user_id': userid}, {'product_id': 1, 'product_quantity': 1, '_id': 0})
+        #split user_id and totalvalue into 2 value for prepratation of insertion into order db
+        split_details = clean_orderDetails3.split( )
+        for userid,total in zip(split_details[0::2], split_details[1::2]):
 
-        for productdetail in allproducts_details:
-            # extract prod_id and quantity value only and clean
-            productdetailStr = str(productdetail)
-            clean_productdetail = productdetailStr.replace("{'product_id': '", "")
-            clean_productdetail1 = clean_productdetail.replace("', 'product_quantity':", "")
-            clean_productdetail2 = clean_productdetail1.replace("}", "")
+            #retrieve name from user db and clean
+            retrieve_user = user.find_one({ '_id':ObjectId(userid) }, { 'name': 1, '_id': 0})
+            userdetails= str(retrieve_user)
+            clean_username = userdetails.replace("{'name': '", "")
+            clean_username1 = clean_username.replace("'}", "")
 
-            # split prod_id and quantity into 2 value for prepratation of insertion into order db
-            split_productdetails = clean_productdetail2.split()
-            for prodid, quantity in zip(split_productdetails[0::2], split_productdetails[1::2]):
-                # insert user_id, name and totalprice into order db
-                order.insert_one(
-                    {'user_id': userid, 'name': clean_username1, 'total_amount': total, "order_time": datetime.now(),
-                     'order': {'product_id': prodid, 'product_quantity': quantity}})
+            #find all products id for each user in cartdb
+            allproducts_details = cart.find({'user_id':userid}, {'product_id':1,'product_quantity':1, '_id':0})
 
-                # find price_id
-                retrieve_priceid = product.find({'product_id': prodid}, {'price_id': 1, '_id': 0})
-                for priceid in retrieve_priceid:
-                    priceidStr = str(priceid)
-                    clean_priceid = priceidStr.replace("{'price_id': '", "")
-                    clean_priceid1 = clean_priceid.replace("'}", "")
+            for productdetail in allproducts_details:
+                #extract prod_id and quantity value only and clean
+                productdetailStr = str(productdetail)
+                clean_productdetail = productdetailStr.replace("{'product_id': '", "")
+                clean_productdetail1 = clean_productdetail.replace("', 'product_quantity':", "")
+                clean_productdetail2 = clean_productdetail1.replace("}", "")
 
-                    productslist = {'price': '', 'quantity': '', }
-                    productslist["price"] = clean_priceid1
-                    productslist["quantity"] = quantity
+                #split prod_id and quantity into 2 value for prepratation of insertion into order db
+                split_productdetails = clean_productdetail2.split( )
+                for prodid,quantity in zip(split_productdetails[0::2], split_productdetails[1::2]):
+                    #insert user_id, name and totalprice into order db
+                    order.insert_one({'user_id':userid,'name': clean_username1,'total_amount': total, "order_time": datetime.now(), 'order': {'product_id': prodid, 'product_quantity': quantity}})
 
-                    # flash(productslist)
+                    #find price_id
+                    retrieve_priceid = product.find({'product_id':prodid},{'price_id':1, '_id':0})
+                    for priceid in retrieve_priceid:
+                        priceidStr = str(priceid)
+                        clean_priceid = priceidStr.replace("{'price_id': '", "")
+                        clean_priceid1 = clean_priceid.replace("'}", "")
 
-    # retrieve total
-    retrieve_total = order.find_one({'user_id': loginuserid})
+                        productslist={'price': '', 'quantity': '', }
+                        productslist["price"]=clean_priceid1
+                        productslist["quantity"]=quantity
 
-    return render_template("checkout.html", order=retrieve_total, cart=retrieve_cart)
+                        #flash(productslist)
+
+        #retrieve total
+        retrieve_total = order.find_one({'user_id':loginuserid})
+
+        return render_template("checkout.html", order=retrieve_total, cart=retrieve_cart)
 
 
 @app.route('/create-checkout-session', methods=['POST'])

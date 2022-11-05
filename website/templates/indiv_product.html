@@ -11,69 +11,59 @@
 </head>
 
 <body>
-    <div>{% include 'navbar.html' %}</div>
+<div>{% include 'navbar.html' %}</div>
 
-    <!-- Page Header Start -->
-    <div class="container-fluid page-header mb-5 position-relative overlay-bottom">
-        <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5"
-            style="min-height: 400px">
-            <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">Bread, Pastries, Cakes</h1>
-        </div>
+<!-- Page Header Start -->
+<div class="container-fluid page-header mb-5 position-relative overlay-bottom">
+    <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5"
+         style="min-height: 400px">
+        <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">Bread, Pastries, Cakes</h1>
     </div>
+</div>
 
-    <!-- Indiv Product Start -->
-    <div class="container-fluid py-5">
-        <div class="container">
-            <div class="reservation position-relative overlay-top overlay-bottom">
-                <div class="row align-items-center">
-                    {% block product %}
+<!-- Indiv Product Start -->
+<div class="container-fluid py-5">
+    <div class="container">
+        <div class="reservation position-relative overlay-top overlay-bottom">
+            <div class="row align-items-center">
+                {% block product %}
                     <div class="col-lg-6 my-5 my-lg-0">
                         <div class="p-5">
-                            <img class="img-fluid" src="../static/img/{{product['product_id']}}.jpg" alt="">
+                            <img class="img-fluid" src="../static/img/{{ product['product_id'] }}.jpg" alt="">
                         </div>
-                        <p class="text-white">{{product['product_desc']}}</p>
-                        <p class="text-white">${{product['product_price']}}</p>
-                        <form class="mb-5" name="register_form" method="post", action="{{url_for('addToCart')}}">
-                            <div class="form-group">
-                                <input type="number" name="quantity" class="form-control bg-transparent border-primary p-4 field" placeholder="Quantity"
-                                    required="required" />
-                            </div>
-                            <input type="hidden" class="form-control" name="CSRFToken" value="{{ CSRFToken }}" readonly>
-                            <p class="error error--hidden"></p>
-                            <div>
-                                <button class="btn btn-primary btn-block font-weight-bold py-3" type="submit" id="add-button">Add to Cart</button>
-                            </div>
-                        </form>
                     </div>
                     <div class="col-lg-6">
                         <div class="text-center p-5" style="background: rgba(51, 33, 29, .8);">
                             <div class="mb-4">
-                                <h1 class="text-white">{{product['product_name']}}</h1>
+                                <h1 class="text-white">{{ product['product_name'] }}</h1>
                             </div>
-                            <p class="text-white">{{product['product_desc']}}</p>
-                            <p class="text-white">{{product['product_price']}}</p>
-                            <form class="mb-5" name="register_form" method="post" , action="{{url_for('addToCart')}}">
+                            <p class="text-white">{{ product['product_desc'] }}</p>
+                            <p class="text-white">${{ product['product_price'] }}</p>
+                            <form class="mb-5" name="register_form" method="post" , action="{{ url_for('addToCart') }}">
                                 <div class="form-group">
                                     <input type="number" name="quantity"
-                                        class="form-control bg-transparent border-primary p-4 field"
-                                        placeholder="Quantity" required="required" />
+                                           class="form-control bg-transparent border-primary p-4 field"
+                                           placeholder="Quantity" required="required"/>
                                 </div>
+                                <input type="hidden" class="form-control" name="CSRFToken" value="{{ CSRFToken }}"
+                                       readonly>
                                 <p class="error error--hidden"></p>
                                 <div>
                                     <button class="btn btn-primary btn-block font-weight-bold py-3" type="submit"
-                                        id="add-button">Add to Cart</button>
+                                            id="addcart-button">Add to Cart
+                                    </button>
                                 </div>
                             </form>
                         </div>
                     </div>
-                    {% endblock %}
-                </div>
+                {% endblock %}
             </div>
         </div>
     </div>
-    <!-- Indiv Product End -->
+</div>
+<!-- Indiv Product End -->
 
-    {% include 'footer.html' %}
+{% include 'footer.html' %}
 
 </body>
 
