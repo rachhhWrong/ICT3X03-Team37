@@ -33,6 +33,7 @@ def add_antiforgery_token():
             for _ in range(32)
         )
 
+
 @app.before_request
 def check_antiforgery_token():
     if request.method == 'POST':
@@ -163,7 +164,6 @@ def analyst_login():
     return render_template("analyst_login.html", CSRFToken=session.get('CSRFToken'))
 
 
-
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     users = mongo.db.users
@@ -195,7 +195,6 @@ def login():
 #         return redirect(url_for('analyst'))
 
 
-
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('email', None)
@@ -204,7 +203,6 @@ def logout():
     flash('Successfully Logged Out', category='success')
     # print(session['username'])
     return redirect('/')
-
 
 
 @app.route('/test/')
@@ -271,7 +269,8 @@ def edit_account():
                          'address': request.form['address'], 'mobile': request.form['mobile']}})
             session['email'] = request.form['email']
             return redirect(url_for('home'))
-    return render_template("edit_account_page.html", name=name, address=address, mobile=mobile, CSRFToken=session.get('CSRFToken'))
+    return render_template("edit_account_page.html", name=name, address=address, mobile=mobile,
+                           CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/delete_account/', methods=['GET', 'POST'])
@@ -322,15 +321,18 @@ def allproducts():
 
 @app.route('/indiv-product/id=<int:id>', methods=['GET', 'POST'])
 def showgood(id):
-    if 'email' not in session:
-        product = mongo.db.products
-        retrieve_product = product.find_one({'product_id': id})
-        return render_template("indiv_product.html", product=retrieve_product)
-    else:
-        product = mongo.db.products
-        retrieve_product = product.find_one({'product_id': id})
-        session['product_id'] = id
-        return render_template("indiv_product.html", product=retrieve_product)
+    if request.methods == "POST":
+        if 'email' not in session:
+            product = mongo.db.products
+            retrieve_product = product.find_one({'product_id': id})
+            return render_template("indiv_product.html", product=retrieve_product)
+        else:
+            product = mongo.db.products
+            retrieve_product = product.find_one({'product_id': id})
+            session['product_id'] = id
+            return render_template("indiv_product.html", product=retrieve_product)
+
+    return render_template("indiv_product.html")
 
 
 @app.route('/addToCart', methods=['GET', 'POST'])
