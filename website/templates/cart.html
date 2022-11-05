@@ -42,10 +42,7 @@
                                 <h1 class="text-white">{{ item['product_name'] }}</h1>
                                 <h6 class = text-white>${{ item['product_price'] }}</h6>                               
                                 <h6 class="text-white">Quantity: {{ item['product_quantity'] }}</h6>
-                                <a href="/removeFromCart?productId={{ item['product_id'] }}">Remove</a>
-                                <!--<form class="{{url_for('removeFromCart')}}">
-                                    <button class="btn btn-primary btn-sm " type="submit">Remove Product</button>
-                                </form>-->
+                                <a href="/removeFromCart?productId={{ item['product_id'] }}">Remove Product</a>
                             </div>
                         </div>
                     </div>
