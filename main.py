@@ -52,7 +52,7 @@ def check_antiforgery_token():
                 nope = True
             
         if nope:
-            abort(403)
+            abort(403, description="Request Kinda Sus. Impostor Request has been reported.")
         
 
 @app.after_request
