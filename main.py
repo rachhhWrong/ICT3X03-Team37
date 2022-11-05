@@ -154,7 +154,7 @@ def analyst_login():
                 session['email'] = request.form['email']
                 session['analyst_logged_in'] = True
                 flash('Login Success', category='success')
-                return redirect(url_for("login"))
+                return redirect(url_for("analyst"))
             else:
                 flash('Login Failed', category='error')
         else:
