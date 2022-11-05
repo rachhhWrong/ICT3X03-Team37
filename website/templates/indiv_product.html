@@ -41,7 +41,7 @@
                             <p class="text-white">${{ product['product_price'] }}</p>
                             <form class="mb-5" name="register_form" method="post" , action="{{ url_for('addToCart') }}">
                                 <div class="form-group">
-                                    <input type="number" name="quantity"
+                                    <input type="number" name="quantity" min="1"
                                            class="form-control bg-transparent border-primary p-4 field"
                                            placeholder="Quantity" required="required"/>
                                 </div>
