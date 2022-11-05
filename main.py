@@ -17,6 +17,44 @@ app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
 mongo = auth.start_mongo_client(app)
 
 
+@app.before_request
+def add_antiforgery_token():
+    if request.method == 'GET' and session.get('CSRFToken') is None:
+        session['CSRFToken'] = ''.join(
+            SystemRandom().choice(string.ascii_letters + string.digits) \
+            for _ in range(32)
+        )
+
+@app.before_request
+def check_antiforgery_token():
+    if request.method == 'POST':
+        session_token = session.get('CSRFToken')
+        request_token = request.form.get('CSRFToken')
+        nope = False
+        if session_token is None:
+            app.logger.warning(
+                "Form Submit Attempt missing CSRF SESSION token for URL %s from %s",
+                request.full_path, request.remote_addr
+            )
+            nope = True
+        elif request.form:
+            if not request_token:
+                app.logger.warning(
+                    "Form Submit Attempt missing CSRF REQUEST token for URL %s from %s",
+                    request.full_path, request.remote_addr
+                )
+                nope = True
+            elif session_token != request_token:
+                app.logger.warning(
+                    "Form Submit Attempt CSRF token MISMATCH for URL %s from %s",
+                    request.full_path, request.remote_addr
+                )
+                nope = True
+            
+        if nope:
+            abort(403)
+        
+
 @app.after_request
 def add_security_headers(response):
     if __name__ == '__main__' and not os.environ.get("DEPLOY_MODE", None):
@@ -65,7 +103,7 @@ def register():
             flash('Invalid Email or Email Exist', category='error')
             return redirect(url_for('register'))
 
-    return render_template("register.html")
+    return render_template("register.html", CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/analyst_login', methods=['POST', 'GET'])
@@ -88,7 +126,7 @@ def analyst_login():
         else:
             flash('Account does not exist', category='error')
 
-    return render_template("analyst_login.html")
+    return render_template("analyst_login.html", CSRFToken=session.get('CSRFToken'))
 
 
 
@@ -112,7 +150,7 @@ def login():
         else:
             flash('Account does not exist', category='error')
 
-    return render_template("login.html", boolean=True)
+    return render_template("login.html", boolean=True, CSRFToken=session.get('CSRFToken'))
 
 
 # pseudocode dont erase
@@ -169,7 +207,7 @@ def edit_account():
                          'address': request.form['address'], 'mobile': request.form['mobile']}})
             session['email'] = request.form['email']
             return redirect(url_for('home'))
-    return render_template("edit_account_page.html", name=name, address=address, mobile=mobile)
+    return render_template("edit_account_page.html", name=name, address=address, mobile=mobile, CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/delete_account/', methods=['GET', 'POST'])
@@ -211,7 +249,7 @@ def allproducts():
 def showgood(id):
     product = mongo.db.products
     retrieve_product = product.find_one({'product_id': id})
-    return render_template("indiv_product.html", product=retrieve_product)
+    return render_template("indiv_product.html", product=retrieve_product, CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/menu/')
