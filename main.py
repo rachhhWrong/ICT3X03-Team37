@@ -358,6 +358,7 @@ def addToCart():
         productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
         C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
         productPrice = int(C_productPrice)
+        
         #Insert into DB
         userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': productPrice, 'product_quantity': int(quantity)})
         return render_template("all_products.html", allproducts=findproduct, CSRFToken=session.get('CSRFToken'))
@@ -392,13 +393,10 @@ def checkout():
         userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
         strUserId = str(userId)
         loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
-
-
         #loginuserid = "6364c1b91b3c2c688f6b73ab"
 
         #find totalamount for each user in cartdb
-        price = cart.aggregate([{"$group":{"_id":loginuserid,"total_amount": {"$sum":{"$multiply":["$product_price", "$product_quantity"]}}}}])
-        #price = cart.aggregate([{'$group':{'_id':loginuserid,'total_amount': {'$sum':{'$multiply':['$product_price', '$product_quantity']}}, 'count':{'$sum':1}}}])
+        price = cart.aggregate([{"$group":{"_id":"$user_id","totalAmount": {"$sum":{"$multiply":["$product_price", "$product_quantity"]}}, "count":{"$sum":"1"}}}])
 
         #find user id from the current session and cart
         retrieve_cart = cart.find({"user_id":loginuserid})
