@@ -36,18 +36,13 @@
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <th scope="row">1</th>
-                <td>Danial</td>
-                <td>cookies</td>
-                <td>123412341234</td>
-            </tr>
-            <tr>
-                <th scope="row">2</th>
-                <td>The Cooler Danial</td>
-                <td>cool cookies</td>
-                <td>123412341234</td>
-            </tr>
+            {% for i in order_big_arr %}
+                <tr>
+                    {% for k in i %}
+                        <td>{{ k }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
             </tbody>
         </table>
     </div>

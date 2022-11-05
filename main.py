@@ -132,7 +132,19 @@ def test():
 
 @app.route('/analyst/', methods=['GET', 'POST'])
 def analyst():
+    order = mongo.db.orders
+    counter = 0
+    order_arr = []
+    order_big_arr = []
     logs = mongo.db.logs
+    for i in order.find():
+        counter += 1
+        order_arr.append(counter)
+        order_arr.append(str(i['name']))
+        order_arr.append(str(i['order']))
+        order_arr.append(str(i['_id']))
+        order_big_arr.append(order_arr)
+        order_arr = []
     counter = 0
     log_arr = []
     log_big_arr = []
@@ -144,7 +156,7 @@ def analyst():
         log_arr.append(str(i['login_time']))
         log_big_arr.append(log_arr)
         log_arr = []
-    return render_template("data_analyst_page.html", log_arr=log_arr, log_big_arr=log_big_arr)
+    return render_template("data_analyst_page.html", log_big_arr=log_big_arr, order_big_arr=order_big_arr)
 
 
 @app.route('/account/')
