@@ -104,7 +104,7 @@ def login():
 #         session['username'] = request.form['username']
 #         return redirect(url_for('analyst'))
 
-@app.route("/login/2fa/", methods=['POST', 'GET'])
+@app.route("/login_2fa/", methods=['POST', 'GET'])
 def login_2fa():
     if request.method == 'POST':
         # getting secret key used by user
