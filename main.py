@@ -188,8 +188,21 @@ def addToCart():
         productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
         C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
         #Insert into DB
-        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': C_productPrice, 'product_quantity': quantity})
+        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
         return render_template("all_products.html", allproducts=findproduct)
+
+@app.route('/removeFromCart')
+def removeFromCart():
+    userCart = mongo.db.cart
+    users = mongo.db.users
+    user_email = session['email']
+    userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+    strUserId = str(userId)
+    clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
+    productId = request.args.get('productId')
+    userCart.delete_one({'user_id': clean_userId, 'product_id': productId})
+    return redirect(url_for('cart'))
+
 
 @app.route('/checkout/')
 def checkout():
