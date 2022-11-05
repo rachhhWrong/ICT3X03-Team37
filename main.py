@@ -185,7 +185,7 @@ def login():
         else:
             flash('Email does not exist', category='error')
 
-    return render_template("login.html", boolean=True)
+    return render_template("login.html", boolean=True, CSRFToken=session.get('CSRFToken'))
 
 
 
@@ -232,7 +232,7 @@ def analyst():
         log_arr.append(str(i['login_time']))
         log_big_arr.append(log_arr)
         log_arr = []
-    return render_template("data_analyst_page.html", log_big_arr=log_big_arr, order_big_arr=order_big_arr)
+    return render_template("data_analyst_page.html", log_big_arr=log_big_arr, order_big_arr=order_big_arr, CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/account/')
@@ -244,7 +244,7 @@ def account():
     name = user['name']
     address = user['address']
     mobile = user['mobile']
-    return render_template("account_page.html", name=name, address=address, mobile=mobile)
+    return render_template("account_page.html", name=name, address=address, mobile=mobile, CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/edit_account/', methods=['GET', 'POST'])
@@ -298,7 +298,7 @@ def cart():
 
     userCart = mongo.db.cart
     cart = userCart.find({ 'user_id': clean_userId})
-    return render_template("cart.html", users=userId, userCart=cart)
+    return render_template("cart.html", users=userId, userCart=cart, CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/about-us/')
@@ -317,12 +317,12 @@ def showgood(id):
     if 'email' not in session:
         product = mongo.db.products
         retrieve_product = product.find_one({'product_id':id})
-        return render_template("indiv_product.html", product=retrieve_product)
+        return render_template("indiv_product.html", product=retrieve_product, CSRFToken=session.get('CSRFToken'))
     else:
         product = mongo.db.products
         retrieve_product = product.find_one({'product_id':id})
         session['product_id'] = id
-        return render_template("indiv_product.html", product=retrieve_product)
+        return render_template("indiv_product.html", product=retrieve_product, CSRFToken=session.get('CSRFToken'))
         
 
 @app.route('/addToCart', methods=['GET', 'POST'])
@@ -358,7 +358,7 @@ def addToCart():
         productPrice = int(C_productPrice)
         #Insert into DB
         userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': productPrice, 'product_quantity': int(quantity)})
-        return render_template("all_products.html", allproducts=findproduct)
+        return render_template("all_products.html", allproducts=findproduct, CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/removeFromCart')
@@ -452,7 +452,7 @@ def checkout():
         #retrieve total
         retrieve_total = order.find_one({'user_id':loginuserid})
 
-        return render_template("checkout.html", order=retrieve_total, cart=retrieve_cart)
+        return render_template("checkout.html", order=retrieve_total, cart=retrieve_cart, CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/create-checkout-session', methods=['POST'])
@@ -471,7 +471,7 @@ def create_checkout_session():
     except Exception as e:
         return str(e)
 
-    return redirect(checkout_session.url, code=303)
+    return redirect(checkout_session.url, code=303, CSRFToken=session.get('CSRFToken'))
 
 
 @app.route("/success")
