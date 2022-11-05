@@ -1,6 +1,6 @@
 import pyotp
 from flask import *
-
+from datetime import datetime
 from website import auth
 from website.models import *
 import os
@@ -15,6 +15,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
 # There are more configs set for non-debug mode; see bottom of file
 
 mongo = auth.start_mongo_client(app)
+
 
 @app.after_request
 def add_security_headers(response):
@@ -31,6 +32,7 @@ def add_security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
 
     return response
+
 
 @app.route('/favicon.ico')
 def favicon():
@@ -66,8 +68,26 @@ def register():
     return render_template("register.html")
 
 
-@app.route('/analyst_login')
+@app.route('/analyst_login', methods=['POST', 'GET'])
 def analyst_login():
+    analyst = mongo.db.analyst
+    logs = mongo.db.logs
+    if request.method == 'POST':
+        analyst_user = analyst.find_one({'email': request.form['email']})
+        if analyst_user:
+            if bcrypt.hashpw(request.form['password'].encode('utf-8'), analyst_user['password']) == analyst_user[
+                'password']:
+                time_in = "UTC " + datetime.now().strftime("%X")
+                logs.insert_one(
+                    {'email': analyst_user['email'], 'date': datetime.now().strftime("%x"), 'login_time': time_in})
+                session['email'] = request.form['email']
+                flash('Login Success', category='success')
+                return redirect(url_for("login_2fa"))
+            else:
+                flash('Login Failed', category='error')
+        else:
+            flash('Account does not exist', category='error')
+
     return render_template("analyst_login.html")
 
 
@@ -75,18 +95,15 @@ def analyst_login():
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     users = mongo.db.users
-
+    logs = mongo.db.logs
     if request.method == 'POST':
         login_user = users.find_one({'email': request.form['email']})
-
-        # print("lol",bcrypt.hashpw(request.form['password'].encode('utf-8'),login_user['password']) == login_user['password'])
-        # pseudocode dont erase
-        # analyst = mongo.db.analyst
-        # analyst_user = analyst.find_one({'name': request.form['username']})
         if login_user:
             if bcrypt.hashpw(request.form['password'].encode('utf-8'), login_user['password']) == login_user[
                 'password']:
-
+                time_in = "UTC " + datetime.now().strftime("%X")
+                logs.insert_one(
+                    {'email': login_user['email'], 'date': datetime.now().strftime("%x"), 'login_time': time_in})
                 session['email'] = request.form['email']
                 flash('Login Success', category='success')
                 return redirect(url_for("login_2fa"))
@@ -113,13 +130,6 @@ def logout():
     # print(session['username'])
     return redirect('/')
 
-
-#@app.route('/navbar')
-#def nav_logout():
-    #if 'email' in session:
-        #email = session['email']
-        #return 'Logged in as ' + email + '<br>' + "<b><a href = '/logout'>click here to logout</a></b>"
-    #return "You are not logged in <br><a href = '/login'></b>" + "click here to login</b></a>"
 
 
 @app.route('/test/')
