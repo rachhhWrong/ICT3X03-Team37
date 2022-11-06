@@ -22,6 +22,7 @@ stripe.api_key = 'sk_test_51LyrlYDkn7CDktELAXteTo9GDPzeeDDG8vNEnDaU7MttLaEYrPyXL
 domain_url = "https://bakes.tisbakery.ml/"
 line_items1 = []
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
+mail = Mail(app)
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 # never send cookies to third-party sites
@@ -164,20 +165,21 @@ def register():
 @app.route('/validate/', methods=['POST', 'GET'])
 def validate():
     email = session['verify_email']
-    #d_email = urllib.parse.unquote(email)
-    if request.method == 'POST':
-        user_otp = request.form['otp']
-        users = mongo.db.users
-        user = users.find_one({"email": email})
+    # d_email = urllib.parse.unquote(email)
 
-        if otp == int(user_otp):
-            users.update_one({'email': email}, {'$set': {'verified': 1}})
-            flash('Account validated!', category='success')
+    user_otp = request.form['otp']
+    users = mongo.db.users
+    user = users.find_one({"email": email})
 
-            return redirect(url_for('home'))
+    if otp == int(user_otp):
+        users.update_one({'email': email}, {'$set': {'verified': 1}})
+        flash('Account validated!', category='success')
+
+        return redirect(url_for('home'))
 
 
     return render_template("validate.html", CSRFToken=session.get('CSRFToken'))
+
 
 @app.route('/resend/', methods=['GET', 'POST'])
 def resend():
@@ -240,8 +242,6 @@ def login():
             flash('Email does not exist', category='error')
 
     return render_template("login.html", boolean=True, CSRFToken=session.get('CSRFToken'))
-
-
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -352,7 +352,7 @@ def cart():
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
     userCart = mongo.db.cart
-    cart = userCart.find({ 'user_id': clean_userId})
+    cart = userCart.find({'user_id': clean_userId})
 
     return render_template("cart.html", users=userId, userCart=cart, CSRFToken=session.get('CSRFToken'))
 
@@ -393,38 +393,45 @@ def addToCart():
     # Retrieving and cleaning user ID based on email stored in session
     findproduct = allproducts.find()
     user_email = session['email']
-    userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+    userId = users.find_one({'email': user_email},
+                            {'_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0})
     strUserId = str(userId)
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
-    #Get quantity of product to add
+    # Get quantity of product to add
     quantity = request.form.get('quantity')
 
-    #Get ProductID for query
+    # Get ProductID for query
     productId = session['product_id']
 
-    #Cleaning of Product name, price
-    productName = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_name': 1})
+    # Cleaning of Product name, price
+    productName = allproducts.find_one({'product_id': productId}, {'_id': 0, 'product_name': 1})
     C_productName = str(productName).replace("{'product_name': '", "").replace("'}", '')
-    productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
+    productPrice = allproducts.find_one({'product_id': productId}, {'_id': 0, 'product_price': 1})
     C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
 
-    #check if product has already been added into the cart
-    if userCart.count_documents({'user_id': clean_userId}) == 0 and userCart.count_documents({'product_id': productId}) == 0:
-        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
+    # check if product has already been added into the cart
+    if userCart.count_documents({'user_id': clean_userId}) == 0 and userCart.count_documents(
+            {'product_id': productId}) == 0:
+        userCart.insert_one({'user_id': clean_userId, 'product_id': productId, 'product_name': C_productName,
+                             'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
 
-    elif userCart.count_documents({'user_id': clean_userId}) != 0 and userCart.count_documents({'product_id': productId}) == 0:
-        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
-    #Update quantity if product is in cart
+    elif userCart.count_documents({'user_id': clean_userId}) != 0 and userCart.count_documents(
+            {'product_id': productId}) == 0:
+        userCart.insert_one({'user_id': clean_userId, 'product_id': productId, 'product_name': C_productName,
+                             'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
+    # Update quantity if product is in cart
     else:
-        currentQuantity = userCart.find_one({'user_id': clean_userId, 'product_id': productId}, { '_id': 0, 'product_quantity': 1})
+        currentQuantity = userCart.find_one({'user_id': clean_userId, 'product_id': productId},
+                                            {'_id': 0, 'product_quantity': 1})
         C_currentQuantity = str(currentQuantity).replace("{'product_quantity': ", "").replace("}", '')
         updatedQuantity = (int(quantity) + int(C_currentQuantity))
 
         if updatedQuantity > 50:
             flash("Sorry! There is a purchase limit of 50 per product!")
         else:
-            userCart.update_one({'user_id': clean_userId, 'product_id': productId}, {'$set' : {'product_quantity': updatedQuantity}})
+            userCart.update_one({'user_id': clean_userId, 'product_id': productId},
+                                {'$set': {'product_quantity': updatedQuantity}})
             flash("Added item successfully!")
     return render_template("all_products.html", allproducts=findproduct, CSRFToken=session.get('CSRFToken'))
 
@@ -452,10 +459,11 @@ def checkout():
     cart = mongo.db.cart
     order = mongo.db.orders
     product = mongo.db.products
-    line_items1=[]
+    line_items1 = []
 
     user_email = session['email']
-    userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+    userId = user.find_one({'email': user_email},
+                           {'_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0})
     strUserId = str(userId)
     loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
@@ -463,71 +471,72 @@ def checkout():
         flash("Cart is empty!", category='error')
         return redirect(url_for('home'))
     else:
-        #find totalamount for each user in cartdb
-        price = cart.aggregate([{"$group":{"_id":"$user_id","totalAmount": {"$sum":{"$multiply":["$product_price", "$product_quantity"]}}, "count":{"$sum":"1"}}}])
+        # find totalamount for each user in cartdb
+        price = cart.aggregate([{"$group": {"_id": "$user_id", "totalAmount": {
+            "$sum": {"$multiply": ["$product_price", "$product_quantity"]}}, "count": {"$sum": "1"}}}])
 
-        #Clean retrieved cart
+        # Clean retrieved cart
         strOrderDetails = str(list(price))
 
-        #extract user_id and totalamount value only
+        # extract user_id and totalamount value only
         clean_orderDetails = strOrderDetails.replace("[{'_id': '", "")
         clean_orderDetails1 = clean_orderDetails.replace("', 'totalAmount': ", " ")
         clean_orderDetails2 = clean_orderDetails1.replace(", 'count': 0}, {'_id': '", " ")
         clean_orderDetails3 = clean_orderDetails2.replace(", 'count': 0}]", " ")
 
-        #split user_id and totalvalue into 2 value for prepratation of insertion into order db
-        split_details = clean_orderDetails3.split( )
-        for userid,total in zip(split_details[0::2], split_details[1::2]):
+        # split user_id and totalvalue into 2 value for prepratation of insertion into order db
+        split_details = clean_orderDetails3.split()
+        for userid, total in zip(split_details[0::2], split_details[1::2]):
 
-            #retrieve name from user db and clean
-            retrieve_user = user.find_one({ '_id':ObjectId(userid) }, { 'name': 1, '_id': 0})
-            userdetails= str(retrieve_user)
+            # retrieve name from user db and clean
+            retrieve_user = user.find_one({'_id': ObjectId(userid)}, {'name': 1, '_id': 0})
+            userdetails = str(retrieve_user)
             clean_username = userdetails.replace("{'name': '", "")
             clean_username1 = clean_username.replace("'}", "")
 
-            #find all products id for each user in cartdb
-            allproducts_details = cart.find({'user_id':userid}, {'product_id':1,'product_quantity':1, '_id':0})
+            # find all products id for each user in cartdb
+            allproducts_details = cart.find({'user_id': userid}, {'product_id': 1, 'product_quantity': 1, '_id': 0})
 
             for productdetail in allproducts_details:
-                #extract prod_id and quantity value only and clean
+                # extract prod_id and quantity value only and clean
                 productdetailStr = str(productdetail)
                 clean_productdetail = productdetailStr.replace("{'product_id': '", "")
                 clean_productdetail1 = clean_productdetail.replace("', 'product_quantity':", "")
                 clean_productdetail2 = clean_productdetail1.replace("}", "")
 
-                #split prod_id and quantity into 2 value for prepratation of insertion into order db
-                for prodid,quantity in zip(variables[0::2], variables[1::2]):
-                    #insert user_id, name and totalprice into order db
-                    order.insert_one({'user_id':userid,'name': clean_username1,'total_amount': total,
-                     "order_time": datetime.now(),
-                     'order': {'product_id': prodid, 'product_quantity': quantity}})
+                # split prod_id and quantity into 2 value for prepratation of insertion into order db
+                for prodid, quantity in zip(variables[0::2], variables[1::2]):
+                    # insert user_id, name and totalprice into order db
+                    order.insert_one({'user_id': userid, 'name': clean_username1, 'total_amount': total,
+                                      "order_time": datetime.now(),
+                                      'order': {'product_id': prodid, 'product_quantity': quantity}})
 
-                    #find price_id
-                    retrieve_priceid = product.find({'product_id':prodid},{'price_id':1, '_id':0})
+                    # find price_id
+                    retrieve_priceid = product.find({'product_id': prodid}, {'price_id': 1, '_id': 0})
                     for priceid in retrieve_priceid:
                         priceidStr = str(priceid)
                         clean_priceid = priceidStr.replace("{'price_id': '", "")
                         clean_priceid1 = clean_priceid.replace("'}", "")
 
-                        productslist={'price': '', 'quantity': '', }
-                        productslist["price"]=clean_priceid1
-                        productslist["quantity"]=quantity
+                        productslist = {'price': '', 'quantity': '', }
+                        productslist["price"] = clean_priceid1
+                        productslist["quantity"] = quantity
 
                         line_items1.append(productslist.copy())
 
-        #   try:
+            #   try:
             checkout_session = stripe.checkout.Session.create(
-                        line_items=line_items1,
-                        mode='payment',
-                        success_url=domain_url + "success",
-                        cancel_url=domain_url + "cancel",
-                        )
-                    #except Exception as e:
-                    #   return str(e)
+                line_items=line_items1,
+                mode='payment',
+                success_url=domain_url + "success",
+                cancel_url=domain_url + "cancel",
+            )
+            # except Exception as e:
+            #   return str(e)
 
-                #   return redirect(checkout_session.url, code=303, CSRFToken=session.get('CSRFToken'))
+            #   return redirect(checkout_session.url, code=303, CSRFToken=session.get('CSRFToken'))
             return redirect(checkout_session.url, code=303)
-            #return render_template("success.html",CSRFToken=session.get('CSRFToken'))
+            # return render_template("success.html",CSRFToken=session.get('CSRFToken'))
 
 
 @app.route("/success")
@@ -540,12 +549,13 @@ def success():
         return render_template("login.html")
     else:
         user_email = session['email']
-        userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+        userId = user.find_one({'email': user_email},
+                               {'_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0})
         strUserId = str(userId)
         loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
         cart.delete_many({'user_id': loginuserid})
-    return render_template("success.html",CSRFToken=session.get('CSRFToken'))
+    return render_template("success.html", CSRFToken=session.get('CSRFToken'))
 
 
 @app.route("/cancel")
@@ -556,7 +566,8 @@ def cancelled():
         return render_template("login.html")
     else:
         user_email = session['email']
-        userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+        userId = user.find_one({'email': user_email},
+                               {'_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0})
         strUserId = str(userId)
         loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
     return render_template("cancel.html", CSRFToken=session.get('CSRFToken'))
