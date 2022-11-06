@@ -15,6 +15,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
 # There are more configs set for non-debug mode; see bottom of file
 
 mongo = auth.start_mongo_client(app)
+asgi_app = None
 
 
 @app.before_request
@@ -279,4 +280,4 @@ else:
 
     # as we are using uvicorn+gunicorn for deployment
     # flask (a WSGI framework) must be adapted to ASGI
-    app = WsgiToAsgi(app)
+    asgi_app = WsgiToAsgi(app)

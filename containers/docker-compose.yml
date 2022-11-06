@@ -11,7 +11,7 @@ services:
     build:
       context: ..
       dockerfile: ./containers/web/Dockerfile
-    # For configuration options see https://hub.docker.com/r/tiangolo/meinheld-gunicorn-flask
+    # For configuration options see https://hub.docker.com/r/tiangolo/uvicorn-gunicorn
     environment:
       # TODO: decide appropriate logging levels with LOG_LEVEL env
       - MONGO_NONROOT_USERNAME
@@ -19,6 +19,7 @@ services:
       - MONGO_INITDB_DATABASE
       - SECRET_KEY
       - DEPLOY_MODE=True
+      - VARIABLE_NAME=asgi_app
     ports:
       # TODO: use port 443 after setting up TLS
       - "80:80"
