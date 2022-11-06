@@ -11,7 +11,11 @@
         </button>
         <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
             <div class="navbar-nav ml-auto p-4">
-                {% if session.email %}
+                {% if session['analyst_logged_in'] %}
+                    <a href="{{ url_for('analyst') }}" class="nav-item nav-link">Dashboard</a>
+                    <a href="{{ url_for('logout') }}" class="nav-item nav-link">Logout</a>
+
+                {% elif session.email %}
                     <a class="nav-item nav-link">Welcome {{ session['email'] }}</a>
                     <a href="{{ url_for('about') }}" class="nav-item nav-link">About Us</a>
                     <a href="{{ url_for('allproducts') }}" class="nav-item nav-link">Our Goods</a>
@@ -28,7 +32,7 @@
             </div>
         </div>
     </nav>
-<!-- TEST
+    <!-- TEST
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         {{session.email}}
         <button type="button" class="close" data-dismiss="alert">
