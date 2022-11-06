@@ -17,9 +17,15 @@ import stripe
 import pymongo
 from bson import ObjectId
 
-stripe.api_key = 'sk_test_51LyrlYDkn7CDktELAXteTo9GDPzeeDDG8vNEnDaU7MttLaEYrPyXLjHtXcBtlAiXDX8RUUWqcONKPsDRJv0miTYS00bf8yHq4N'
+stripe_keys = {
+    "secret_key": os.environ["STRIPE_SECRET_KEY"]
+}
+
+stripe.api_key = stripe_keys["secret_key"]
+
 #domain_url = "http://127.0.0.1:5000/"
 domain_url = "https://bakes.tisbakery.ml/"
+
 line_items1 = []
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
 mail = Mail(app)
@@ -170,10 +176,11 @@ def register():
 @app.route('/validate/', methods=['POST', 'GET'])
 def validate():
     email = session['verify_email']
-
+    msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[email])
+    msg.body = "Your OTP: " + str(otp)
     otp_check = []
     otp_check.append(otp)
-
+    mail.send(msg)
     users = mongo.db.users
 
     if request.method == 'POST':
@@ -352,7 +359,8 @@ def cart():
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
     userCart = mongo.db.cart
-    cart = userCart.find({'user_id': clean_userId})
+    cart = userCart.find({ 'user_id': clean_userId})
+
     return render_template("cart.html", users=userId, userCart=cart, CSRFToken=session.get('CSRFToken'))
 
 
@@ -392,28 +400,39 @@ def addToCart():
     # Retrieving and cleaning user ID based on email stored in session
     findproduct = allproducts.find()
     user_email = session['email']
-    userId = users.find_one({'email': user_email},
-                            {'_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0})
+    userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
     strUserId = str(userId)
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
-    # Get quantity of product to add
+    #Get quantity of product to add
     quantity = request.form.get('quantity')
 
-    # Get ProductID for query
+    #Get ProductID for query
     productId = session['product_id']
 
-    # Cleaning of Product name, price
-    productName = allproducts.find_one({'product_id': productId}, {'_id': 0, 'product_name': 1})
+    #Cleaning of Product name, price
+    productName = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_name': 1})
     C_productName = str(productName).replace("{'product_name': '", "").replace("'}", '')
-    productPrice = allproducts.find_one({'product_id': productId}, {'_id': 0, 'product_price': 1})
+    productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
     C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
-    productPrice = int(C_productPrice)
 
-    # Insert into DB
-    userCart.insert_one(
-        {'user_id': clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': productPrice,
-         'product_quantity': int(quantity)})
+    #check if product has already been added into the cart
+    if userCart.count_documents({'user_id': clean_userId}) == 0 and userCart.count_documents({'product_id': productId}) == 0:
+        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
+
+    elif userCart.count_documents({'user_id': clean_userId}) != 0 and userCart.count_documents({'product_id': productId}) == 0:
+        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
+    #Update quantity if product is in cart
+    else:
+        currentQuantity = userCart.find_one({'user_id': clean_userId, 'product_id': productId}, { '_id': 0, 'product_quantity': 1})
+        C_currentQuantity = str(currentQuantity).replace("{'product_quantity': ", "").replace("}", '')
+        updatedQuantity = (int(quantity) + int(C_currentQuantity))
+
+        if updatedQuantity > 50:
+            flash("Sorry! There is a purchase limit of 50 per product!")
+        else:
+            userCart.update_one({'user_id': clean_userId, 'product_id': productId}, {'$set' : {'product_quantity': updatedQuantity}})
+            flash("Added item successfully!")
     return render_template("all_products.html", allproducts=findproduct, CSRFToken=session.get('CSRFToken'))
 
 
@@ -479,9 +498,11 @@ def checkout():
             for productdetail in allproducts_details:
                 #extract prod_id and quantity value only and clean
                 productdetailStr = str(productdetail)
-                clean_productdetail = productdetailStr.replace("{'product_id': '", "")
-                clean_productdetail1 = clean_productdetail.replace("', 'product_quantity':", "")
-                clean_productdetail2 = clean_productdetail1.replace("}", "")
+                productdetailStr1 = re.findall(r'\w+', productdetailStr)
+                productdetailStr2 = ' '.join(productdetailStr1)
+                productdetailStr3 = re.sub('product_id ', '', productdetailStr2)
+                productdetailStr4 = re.sub(' product_quantity', '', productdetailStr3)
+                variables = productdetailStr4.split( )
 
                 #split prod_id and quantity into 2 value for prepratation of insertion into order db
                 for prodid,quantity in zip(variables[0::2], variables[1::2]):
@@ -548,35 +569,6 @@ def cancelled():
         strUserId = str(userId)
         loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
     return render_template("cancel.html", CSRFToken=session.get('CSRFToken'))
-
-@app.route("/webhook", methods=['POST'])
-def stripe_webhook():
-    payload = request.get_data(as_text=True)
-    sig_header = request.headers.get('Stripe-Signature')
-
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, stripe_keys["endpoint_secret"]
-        )
-
-    except ValueError as e:
-        # Invalid payload
-        return 'Invalid payload', 400
-    except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
-        return 'Invalid signature', 400
-
-    # Handle the checkout.session.completed event
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-
-        # Fulfill the purchase...
-        handle_checkout_session(session)
-
-    return 'Success', 200
-
-def handle_checkout_session(session):
-    print("Payment was successful.")
 
 if __name__ == '__main__':
     app.secret_key = 'secret'
