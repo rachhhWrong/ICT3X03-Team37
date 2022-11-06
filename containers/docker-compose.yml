@@ -17,7 +17,10 @@ services:
       - MONGO_NONROOT_USERNAME
       - MONGO_NONROOT_PASSWORD
       - MONGO_INITDB_DATABASE
+      - MAIL_USERNAME
+      - MAIL_PASSWORD
       - SECRET_KEY
+      - STRIPE_SECRET_KEY
       - DEPLOY_MODE=True
       - VARIABLE_NAME=asgi_app
     ports:

@@ -68,7 +68,9 @@ stages {
 		withCredentials([
 			usernamePassword(credentialsId: 'd72d3cc9-af19-4e0e-a8a3-9b83d2526e3e', passwordVariable: 'MONGO_INITDB_ROOT_PASSWORD', usernameVariable: 'MONGO_INITDB_ROOT_USERNAME'),
 			usernamePassword(credentialsId: '5d318559-a4f3-4586-acd5-504d409403e5', passwordVariable: 'MONGO_NONROOT_PASSWORD', usernameVariable: 'MONGO_NONROOT_USERNAME'),
-			string(credentialsId: 'FLASK_SECRET_KEY', variable: 'SECRET_KEY')
+			string(credentialsId: 'FLASK_SECRET_KEY', variable: 'SECRET_KEY'),
+			usernamePassword(credentialsId: '487d30df-f5c6-4798-ad51-af69d39e7c1a', passwordVariable: 'MAIL_PASSWORD', usernameVariable: 'MAIL_USERNAME'),
+			string(credentialsId: '2261ab67-559f-4399-8e23-ca5064016306', variable: 'STRIPE_SECRET_KEY')
 			]) {
 				dir('containers') {
 					sh "docker compose up -d"

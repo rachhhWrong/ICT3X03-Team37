@@ -8,7 +8,7 @@ from datetime import datetime
 from random import randint
 from flask_mail import Mail, Message
 
-from website import auth
+from website import auth, email
 from functools import wraps
 import os
 import re
@@ -39,13 +39,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
 mongo = auth.start_mongo_client(app)
 asgi_app = None
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'bakes.tisbakery@gmail.com'
-app.config['MAIL_PASSWORD'] = 'hzyfwwmocqgnhctg'
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-mail = Mail(app)
+mail = email.start_mail(app)
 otp = randint(100000, 999999)
 
 

@@ -20,6 +20,9 @@ services:
       # - MONGO_NONROOT_USERNAME
       # - MONGO_NONROOT_PASSWORD
       # - MONGO_INITDB_DATABASE
+      - MAIL_USERNAME
+      - MAIL_PASSWORD
+      - STRIPE_SECRET_KEY
     ports:
     # TODO: use port 443 after setting up TLS
     - "5000:80"
