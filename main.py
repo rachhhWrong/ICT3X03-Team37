@@ -119,6 +119,7 @@ def analyst_login():
                 logs.insert_one(
                     {'email': analyst_user['email'], 'date': datetime.now().strftime("%x"), 'login_time': time_in})
                 session['email'] = request.form['email']
+                session.permanent = True
                 flash('Login Success', category='success')
                 return redirect(url_for("login"))
             else:
@@ -143,6 +144,7 @@ def login():
                 logs.insert_one(
                     {'email': login_user['email'], 'date': datetime.now().strftime("%x"), 'login_time': time_in})
                 session['email'] = request.form['email']
+                session.permanent = True
                 flash('Login Success', category='success')
                 return redirect(url_for("allproducts"))
             else:
@@ -164,6 +166,7 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('email', None)
+    session.permanent = False
     flash('Successfully Logged Out', category='success')
     # print(session['username'])
     return redirect('/')
