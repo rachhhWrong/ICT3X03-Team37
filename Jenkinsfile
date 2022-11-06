@@ -53,7 +53,7 @@ stages {
 		steps{
 			script{
 				docker.image("3x03/db").withRun("--env-file containers/dev.env"){_->
-					docker.image("3x03/web").withRun("--env-file containers/dev.env -e MAIL_USERNAME=fake@gmail.com -e MAIL_PASSWORD=fakepassword",){c->
+					docker.image("3x03/web").withRun("--env-file containers/dev.env -e MAIL_USERNAME=fake@gmail.com -e MAIL_PASSWORD=fakepassword -e STRIPE_SECRET_KEY=fakekey",){c->
 						sh "docker cp test.py ${c.id}:/app/test.py"
 						sh "docker exec -t ${c.id} python test.py"
 					}
