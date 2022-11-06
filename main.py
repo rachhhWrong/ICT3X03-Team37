@@ -166,7 +166,7 @@ def register():
 def validate():
     email = session['verify_email']
     msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[email])
-    msg.body = str(otp)
+    msg.body = "Your OTP: " + str(otp)
     otp_check = []
     otp_check.append(otp)
     mail.send(msg)
