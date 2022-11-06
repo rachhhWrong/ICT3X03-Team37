@@ -169,12 +169,9 @@ def register():
 
 @app.route('/validate/', methods=['POST', 'GET'])
 def validate():
-    email = session['verify_email']
-    msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[email])
-    msg.body = "Your OTP: " + str(otp)
+
     otp_check = []
     otp_check.append(otp)
-    mail.send(msg)
     users = mongo.db.users
 
     if request.method == 'POST':
