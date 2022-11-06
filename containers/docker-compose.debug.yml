@@ -13,9 +13,10 @@ services:
       dockerfile: ./containers/web/Dockerfile
     env_file:
       - dev.env
-    # For configuration options see https://hub.docker.com/r/tiangolo/meinheld-gunicorn-flask
+    # For configuration options see https://hub.docker.com/r/tiangolo/uvicorn-gunicorn
     environment:
       - LOG_LEVEL=debug
+      - VARIABLE_NAME=asgi_app
       # - MONGO_NONROOT_USERNAME
       # - MONGO_NONROOT_PASSWORD
       # - MONGO_INITDB_DATABASE

@@ -21,10 +21,12 @@ app = Flask(__name__, template_folder='website/templates', static_folder='websit
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 # never send cookies to third-party sites
-app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
+# would prefer Strict, but it breaks navigating back from Stripe
+app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
 # There are more configs set for non-debug mode; see bottom of file
 
 mongo = auth.start_mongo_client(app)
+asgi_app = None
 
 
 @app.before_request
@@ -155,6 +157,7 @@ def analyst_login():
                     {'email': analyst_user['email'], 'date': datetime.now().strftime("%x"), 'login_time': time_in})
                 session['email'] = request.form['email']
                 session['analyst_logged_in'] = True
+                session.permanent = True
                 flash('Login Success', category='success')
                 return redirect(url_for("analyst"))
             else:
@@ -181,6 +184,7 @@ def login():
                     {'email': login_user['email'], 'date': datetime.now().strftime("%x"), 'login_time': time_in})
                 session['email'] = request.form['email']
                 session['user_logged_in'] = True
+                session.permanent = True
                 flash('Login Success', category='success')
                 return redirect(url_for('allproducts'))
             else:
@@ -198,6 +202,7 @@ def logout():
     session.pop('email', None)
     session.pop('user_logged_in', None)
     session.pop('analyst_logged_in', None)
+    session.permanent = False
     flash('Successfully Logged Out', category='success')
     # print(session['username'])
     return redirect('/')
@@ -506,6 +511,7 @@ else:
     # deployment mode settings
     from random import SystemRandom
     import string
+    from asgiref.wsgi import WsgiToAsgi
 
     if skey := os.environ.get("SECRET_KEY", None):
         app.secret_key = skey
@@ -514,3 +520,7 @@ else:
         app.config["PERMANENT_SESSION_LIFETIME"] = 900
         # require HTTPS to load cookies
         app.config["SESSION_COOKIE_SECURE"] = True
+
+    # as we are using uvicorn+gunicorn for deployment
+    # flask (a WSGI framework) must be adapted to ASGI
+    asgi_app = WsgiToAsgi(app)
