@@ -152,6 +152,8 @@ def register():
                 session['verify_email'] = request.form['email']
                 session.permanent = True
                 # session['user_logged_in'] = True
+
+
                 flash('Please verify email address!', category='success')
                 print('registered', )
                 return redirect(url_for('validate', email=email))
