@@ -170,24 +170,14 @@ def validate():
         user = users.find_one({"email": email})
 
         if otp == int(user_otp):
-            if user:
-                users.update_one({'email': email}, {'$set': {'verified': 1}})
-                flash('Account validated!', category='success')
+            users.update_one({'email': email}, {'$set': {'verified': 1}})
+            flash('Account validated!', category='success')
 
             return redirect(url_for('home'))
 
 
     return render_template("validate.html", CSRFToken=session.get('CSRFToken'))
 
-
-@app.route('/resend/', methods=['GET', 'POST'])
-def resend():
-    email = request.args.get('email')
-    if request.method == 'POST':
-        msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[email])
-        msg.body = str(otp)
-        mail.send(msg)
-    return redirect(url_for('validate'))
 
 
 @app.route('/analyst_login', methods=['POST', 'GET'])
