@@ -146,13 +146,11 @@ def register():
                                   'address': request.form['address'], 'mobile': request.form['mobile'],
                                   'verified': 0})
                 email = request.form['email']
+                session['verify_email'] = request.form['email']
+                session.permanent = True
                 # session['user_logged_in'] = True
                 flash('Please verify emai; address!', category='success')
                 print('registered', )
-                msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[request.form['email']])
-                msg.body = str(otp)
-                mail.send(msg)
-                session['verify_email'] = email
                 return redirect(url_for('validate', email=email))
         except Exception as e:
             print(e)
@@ -165,18 +163,21 @@ def register():
 @app.route('/validate/', methods=['POST', 'GET'])
 def validate():
     email = session['verify_email']
+    msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[email])
+    msg.body = str(otp)
+    otp_check = []
+    otp_check.append(otp)
+    mail.send(msg)
+    users = mongo.db.users
+    user = users.find_one({"email": email})
     #d_email = urllib.parse.unquote(email)
     if request.method == 'POST':
         user_otp = request.form['otp']
-        users = mongo.db.users
-        user = users.find_one({"email": email})
-
-        if otp == int(user_otp):
+        if otp_check[0] == int(user_otp):
             if user:
                 users.update_one({'email': email}, {'$set': {'verified': 1}})
                 flash('Account validated!', category='success')
-
-            return redirect(url_for('home'))
+                return redirect(url_for('home'))
 
 
     return render_template("validate.html", CSRFToken=session.get('CSRFToken'))
@@ -354,8 +355,7 @@ def cart():
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
     userCart = mongo.db.cart
-    cart = userCart.find({ 'user_id': clean_userId})
-
+    cart = userCart.find({'user_id': clean_userId})
     return render_template("cart.html", users=userId, userCart=cart, CSRFToken=session.get('CSRFToken'))
 
 
@@ -395,39 +395,28 @@ def addToCart():
     # Retrieving and cleaning user ID based on email stored in session
     findproduct = allproducts.find()
     user_email = session['email']
-    userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+    userId = users.find_one({'email': user_email},
+                            {'_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0})
     strUserId = str(userId)
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
-    #Get quantity of product to add
+    # Get quantity of product to add
     quantity = request.form.get('quantity')
 
-    #Get ProductID for query
+    # Get ProductID for query
     productId = session['product_id']
 
-    #Cleaning of Product name, price
-    productName = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_name': 1})
+    # Cleaning of Product name, price
+    productName = allproducts.find_one({'product_id': productId}, {'_id': 0, 'product_name': 1})
     C_productName = str(productName).replace("{'product_name': '", "").replace("'}", '')
-    productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
+    productPrice = allproducts.find_one({'product_id': productId}, {'_id': 0, 'product_price': 1})
     C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
+    productPrice = int(C_productPrice)
 
-    #check if product has already been added into the cart
-    if userCart.count_documents({'user_id': clean_userId}) == 0 and userCart.count_documents({'product_id': productId}) == 0:
-        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
-
-    elif userCart.count_documents({'user_id': clean_userId}) != 0 and userCart.count_documents({'product_id': productId}) == 0:
-        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
-    #Update quantity if product is in cart
-    else:
-        currentQuantity = userCart.find_one({'user_id': clean_userId, 'product_id': productId}, { '_id': 0, 'product_quantity': 1})
-        C_currentQuantity = str(currentQuantity).replace("{'product_quantity': ", "").replace("}", '')
-        updatedQuantity = (int(quantity) + int(C_currentQuantity))
-
-        if updatedQuantity > 50:
-            flash("Sorry! There is a purchase limit of 50 per product!")
-        else:
-            userCart.update_one({'user_id': clean_userId, 'product_id': productId}, {'$set' : {'product_quantity': updatedQuantity}})
-            flash("Added item successfully!")
+    # Insert into DB
+    userCart.insert_one(
+        {'user_id': clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': productPrice,
+         'product_quantity': int(quantity)})
     return render_template("all_products.html", allproducts=findproduct, CSRFToken=session.get('CSRFToken'))
 
 
