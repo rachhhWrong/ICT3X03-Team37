@@ -18,7 +18,7 @@ import pymongo
 from bson import ObjectId
 
 stripe.api_key = 'sk_test_51LyrlYDkn7CDktELAXteTo9GDPzeeDDG8vNEnDaU7MttLaEYrPyXLjHtXcBtlAiXDX8RUUWqcONKPsDRJv0miTYS00bf8yHq4N'
-# domain_url = "http://127.0.0.1:5000/"
+#domain_url = "http://127.0.0.1:5000/"
 domain_url = "https://bakes.tisbakery.ml/"
 line_items1 = []
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
@@ -131,7 +131,9 @@ def favicon():
 @app.route('/')
 def home():
     session.get('email')
-    return render_template("home.html")
+    product = mongo.db.products
+    retrieve_product = product.find_one()
+    return render_template("home.html",product=retrieve_product)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -254,13 +256,7 @@ def logout():
     session.pop('analyst_logged_in', None)
     session.permanent = False
     flash('Successfully Logged Out', category='success')
-    # print(session['username'])
     return redirect('/')
-
-
-@app.route('/test/')
-def test():
-    return render_template("test.html")
 
 
 @app.route('/analyst/', methods=['GET', 'POST'])
@@ -552,6 +548,34 @@ def cancelled():
         loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
     return render_template("cancel.html", CSRFToken=session.get('CSRFToken'))
 
+@app.route("/webhook", methods=['POST'])
+def stripe_webhook():
+    payload = request.get_data(as_text=True)
+    sig_header = request.headers.get('Stripe-Signature')
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, stripe_keys["endpoint_secret"]
+        )
+
+    except ValueError as e:
+        # Invalid payload
+        return 'Invalid payload', 400
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return 'Invalid signature', 400
+
+    # Handle the checkout.session.completed event
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+
+        # Fulfill the purchase...
+        handle_checkout_session(session)
+
+    return 'Success', 200
+
+def handle_checkout_session(session):
+    print("Payment was successful.")
 
 if __name__ == '__main__':
     app.secret_key = 'secret'
