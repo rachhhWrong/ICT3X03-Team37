@@ -144,13 +144,11 @@ def register():
                                   'address': request.form['address'], 'mobile': request.form['mobile'],
                                   'verified': 0})
                 email = request.form['email']
+                session['verify_email'] = request.form['email']
+                session.permanent = True
                 # session['user_logged_in'] = True
                 flash('Please verify emai; address!', category='success')
                 print('registered', )
-                msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[request.form['email']])
-                msg.body = str(otp)
-                mail.send(msg)
-                session['verify_email'] = email
                 return redirect(url_for('validate', email=email))
         except Exception as e:
             print(e)
@@ -163,17 +161,21 @@ def register():
 @app.route('/validate/', methods=['POST', 'GET'])
 def validate():
     email = session['verify_email']
+    msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[email])
+    msg.body = str(otp)
+    otp_check = []
+    otp_check.append(otp)
+    mail.send(msg)
+    users = mongo.db.users
+    user = users.find_one({"email": email})
     #d_email = urllib.parse.unquote(email)
     if request.method == 'POST':
         user_otp = request.form['otp']
-        users = mongo.db.users
-        user = users.find_one({"email": email})
-
-        if otp == int(user_otp):
-            users.update_one({'email': email}, {'$set': {'verified': 1}})
-            flash('Account validated!', category='success')
-
-            return redirect(url_for('home'))
+        if otp_check[0] == int(user_otp):
+            if user:
+                users.update_one({'email': email}, {'$set': {'verified': 1}})
+                flash('Account validated!', category='success')
+                return redirect(url_for('home'))
 
 
     return render_template("validate.html", CSRFToken=session.get('CSRFToken'))
