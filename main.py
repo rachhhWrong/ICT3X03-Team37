@@ -469,6 +469,9 @@ def checkout():
 
 @app.route("/success")
 def success():
+    user = mongo.db.users
+    cart = mongo.db.cart
+
     if 'email' not in session:
         flash("Please login first!", category='error')
         return render_template("login.html")
@@ -477,11 +480,14 @@ def success():
         userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
         strUserId = str(userId)
         loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
-    return render_template("success.html")
+
+        cart.delete_many({'user_id': loginuserid})
+    return render_template("success.html",CSRFToken=session.get('CSRFToken'))
 
 
 @app.route("/cancel")
 def cancelled():
+    user = mongo.db.users
     if 'email' not in session:
         flash("Please login first!", category='error')
         return render_template("login.html")
@@ -490,7 +496,7 @@ def cancelled():
         userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
         strUserId = str(userId)
         loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
-    return render_template("cancel.html")
+    return render_template("cancel.html", CSRFToken=session.get('CSRFToken'))
 
 
 if __name__ == '__main__':
