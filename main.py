@@ -130,6 +130,7 @@ def favicon():
 
 @app.route('/')
 def home():
+    session.pop('verify_email', None)
     session.get('email')
     product = mongo.db.products
     retrieve_product = product.find_one()
@@ -219,7 +220,7 @@ def analyst_login():
 def login():
     users = mongo.db.users
     logs = mongo.db.logs
-
+    session.pop('verify_email', None)
     if session.get('analyst_logged_in'):
         return redirect(url_for("home"))
     if request.method == 'POST':
