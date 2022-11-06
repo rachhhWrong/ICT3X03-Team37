@@ -172,8 +172,9 @@ def validate():
         user = users.find_one({"email": email})
 
         if otp == int(user_otp):
-            users.update_one({'email': email}, {'$set': {'verified': 1}})
-            flash('Account validated!', category='success')
+            if user:
+                users.update_one({'email': email}, {'$set': {'verified': 1}})
+                flash('Account validated!', category='success')
 
             return redirect(url_for('home'))
 
