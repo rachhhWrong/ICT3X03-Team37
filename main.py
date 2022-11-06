@@ -151,7 +151,7 @@ def register():
                 session['verify_email'] = request.form['email']
                 session.permanent = True
                 # session['user_logged_in'] = True
-                flash('Please verify emai; address!', category='success')
+                flash('Please verify email address!', category='success')
                 print('registered', )
                 return redirect(url_for('validate', email=email))
         except Exception as e:
@@ -242,7 +242,7 @@ def login():
             else:
                 flash('Login Failed', category='error')
         else:
-            flash('Email does not exist', category='error')
+            flash('Account does not exist', category='error')
 
     return render_template("login.html", boolean=True, CSRFToken=session.get('CSRFToken'))
 
