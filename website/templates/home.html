@@ -42,57 +42,29 @@
             <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">Latest Promotions</h4>
             <h1 class="display-4">Breads & Pastries</h1>
         </div>
-
-        <div class="owl-carousel testimonial-carousel">
-            <div class="testimonial-item">
-                <div class="d-flex align-items-center mb-3">
-                    <img class="img-fluid" src="../static/img/menu-1.jpg" alt="">
-                    <div class="ml-3">
-                        <h4>Client Name</h4>
-                        <i>Profession</i>
+        <div class="reservation position-relative overlay-top overlay-bottom">
+            <div class="row align-items-center">
+                {% block product %}
+                <div class="col-lg-6 my-5 my-lg-0">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div class="text-center p-5">
+                            <img class="img-fluid" src="../static/img/{{product['product_id']}}.jpg" alt="">
+                        </div>
                     </div>
                 </div>
-                <p class="m-0">Sed ea amet kasd elitr stet, stet rebum et ipsum est duo elitr eirmod clita lorem. Dolor
-                    tempor ipsum sanct clita</p>
-            </div>
-            <div class="testimonial-item">
-                <div class="d-flex align-items-center mb-3">
-                    <img class="img-fluid" src="../static/img/menu-2.jpg" alt="">
-                    <div class="ml-3">
-                        <h4>Client Name</h4>
-                        <i>Profession</i>
+                <div class="col-lg-6">
+                    <div class="text-center p-5">
+                        <div class="mb-4">
+                            <h1 class="text-white">{{product['product_name']}}</h1>
+                            <h6 class=text-white>{{product['product_desc']}}</h6>
+                        </div>
                     </div>
                 </div>
-                <p class="m-0">Sed ea amet kasd elitr stet, stet rebum et ipsum est duo elitr eirmod clita lorem. Dolor
-                    tempor ipsum sanct clita</p>
-            </div>
-            <div class="testimonial-item">
-                <div class="d-flex align-items-center mb-3">
-                    <img class="img-fluid" src="../static/img/menu-3.jpg" alt="">
-                    <div class="ml-3">
-                        <h4>Client Name</h4>
-                        <i>Profession</i>
-                    </div>
-                </div>
-                <p class="m-0">Sed ea amet kasd elitr stet, stet rebum et ipsum est duo elitr eirmod clita lorem. Dolor
-                    tempor ipsum sanct clita</p>
-            </div>
-            <div class="testimonial-item">
-                <div class="d-flex align-items-center mb-3">
-                    <img class="img-fluid" src="../static/img/service-4.jpg" alt="">
-                    <div class="ml-3">
-                        <h4>Client Name</h4>
-                        <i>Profession</i>
-                    </div>
-                </div>
-                <p class="m-0">Sed ea amet kasd elitr stet, stet rebum et ipsum est duo elitr eirmod clita lorem. Dolor
-                    tempor ipsum sanct clita</p>
+                {% endblock %}
             </div>
         </div>
     </div>
-</div>
 <!-- Home End -->
-<br><br><br><br><br><br><br><br>
 {% include 'footer.html' %}
 
 </body>
