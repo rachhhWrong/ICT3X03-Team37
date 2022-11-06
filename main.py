@@ -151,9 +151,6 @@ def register():
                 session['verify_email'] = request.form['email']
                 session.permanent = True
                 # session['user_logged_in'] = True
-                msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[email])
-                msg.body = "Your OTP: " + str(otp)
-                mail.send(msg)
 
 
                 flash('Please verify email address!', category='success')
@@ -169,12 +166,16 @@ def register():
 
 @app.route('/validate/', methods=['POST', 'GET'])
 def validate():
-    validate.checkOTP = otp
+    email = session['verify_email']
+    msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[email])
+    msg.body = "Your OTP: " + str(otp)
+    validate.otp = otp
+    mail.send(msg)
     users = mongo.db.users
 
     if request.method == 'POST':
         user_otp = request.form['otp']
-        if  validate.checkOTP == int(user_otp):
+        if validate.otp == int(user_otp):
             users.update_one({'email': email}, {'$set': {'verified': 1}})
             flash('Account validated!', category='success')
             return redirect(url_for('home'))
