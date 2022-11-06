@@ -169,14 +169,12 @@ def register():
 
 @app.route('/validate/', methods=['POST', 'GET'])
 def validate():
-
-    otp_check = []
-    otp_check.append(otp)
+    validate.checkOTP = otp
     users = mongo.db.users
 
     if request.method == 'POST':
         user_otp = request.form['otp']
-        if otp_check[0] == int(user_otp):
+        if  validate.checkOTP == int(user_otp):
             users.update_one({'email': email}, {'$set': {'verified': 1}})
             flash('Account validated!', category='success')
             return redirect(url_for('home'))
