@@ -1,0 +1,65 @@
+{% block body %}
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>TIS Bakery</title>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <meta content="Free Website Template" name="keywords">
+        <meta content="Free Website Template" name="description">
+
+        {% include 'links.html' %}
+    </head>
+
+    <body>
+    {% include 'navbar.html' %}
+    <!-- Page Header Start -->
+    <div class="container-fluid page-header mb-5 position-relative">
+        <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5"
+             style="min-height: 400px">
+            <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">Login and start ordering from us!</h1>
+        </div>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Reservation Start -->
+    <div class="container-fluid py-5">
+        <div class="container">
+            <div class="reservation position-relative">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <div class="text-center p-5" style="background: rgba(51, 33, 29, .8);">
+                            <h1 class="text-white mb-4 mt-5">OTP</h1>
+                            <form class="mb-5" method="post" , action="{{ url_for('validate') }}">
+                                <div class="form-group">
+                                    <input type="text" style="color: white" name="otp"
+                                           class="form-control bg-transparent border-primary p-4 field"
+                                           placeholder="OTP"
+                                           required="required"/>
+                                </div>
+                                <input type="hidden" class="form-control" name="CSRFToken" value="{{ CSRFToken }}"
+                                       readonly>
+
+                                <p class="error error--hidden"></p>
+                                <!--<button class="btn btn-primary btn-block font-weight-bold py-3" type="submit">Register</button> -->
+                                <input id='alert-submit' type="submit" value="submit" class="btn btn-primary btn-lg">
+
+                            </form>
+
+
+                        </div>
+                        </form>
+                        <div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- Reservation End -->
+    </body>
+    {% include 'footer.html' %}
+    </html>
+{% endblock %}

@@ -1,11 +1,14 @@
 import json
+import urllib
 
 import pyotp
 from flask import *
 from flask import Flask, redirect, request, render_template, jsonify
 from datetime import datetime
+from random import randint
+from flask_mail import Mail, Message
+
 from website import auth
-from website.models import *
 from functools import wraps
 import os
 import re
@@ -15,9 +18,9 @@ import pymongo
 from bson import ObjectId
 
 stripe.api_key = 'sk_test_51LyrlYDkn7CDktELAXteTo9GDPzeeDDG8vNEnDaU7MttLaEYrPyXLjHtXcBtlAiXDX8RUUWqcONKPsDRJv0miTYS00bf8yHq4N'
-#domain_url = "http://127.0.0.1:5000/"
+# domain_url = "http://127.0.0.1:5000/"
 domain_url = "https://bakes.tisbakery.ml/"
-
+line_items1 = []
 app = Flask(__name__, template_folder='website/templates', static_folder='website/static')
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
@@ -28,6 +31,15 @@ app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
 
 mongo = auth.start_mongo_client(app)
 asgi_app = None
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'bakes.tisbakery@gmail.com'
+app.config['MAIL_PASSWORD'] = 'hzyfwwmocqgnhctg'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
+otp = randint(100000, 999999)
 
 
 @app.before_request
@@ -130,18 +142,51 @@ def register():
             if existing_users is None:
                 hashpass = bcrypt.hashpw(request.form['password'].encode('utf-8'), bcrypt.gensalt())
                 users.insert_one({'name': request.form['name'], 'email': request.form['email'], 'password': hashpass,
-                                  'address': request.form['address'], 'mobile': request.form['mobile']})
-                session['email'] = request.form['email']
-                session['user_logged_in'] = True
-                flash('Registered!', category='success')
+                                  'address': request.form['address'], 'mobile': request.form['mobile'],
+                                  'verified': 0})
+                email = request.form['email']
+                # session['user_logged_in'] = True
+                flash('Please verify emai; address!', category='success')
                 print('registered', )
-                return redirect(url_for('home'))
+                msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[request.form['email']])
+                msg.body = str(otp)
+                mail.send(msg)
+                session['verify_email'] = email
+                return redirect(url_for('validate', email=email))
         except Exception as e:
             print(e)
-            flash('Invalid Email or Email Exist', category='error')
+            flash('Invalid Inputs', category='error')
             return redirect(url_for('register'))
 
     return render_template("register.html", CSRFToken=session.get('CSRFToken'))
+
+
+@app.route('/validate/', methods=['POST', 'GET'])
+def validate():
+    email = session['verify_email']
+    #d_email = urllib.parse.unquote(email)
+    if request.method == 'POST':
+        user_otp = request.form['otp']
+        users = mongo.db.users
+        user = users.find_one({"email": email})
+
+        if otp == int(user_otp):
+            users.update_one({'email': email}, {'$set': {'verified': 1}})
+            flash('Account validated!', category='success')
+
+            return redirect(url_for('home'))
+
+
+    return render_template("validate.html", CSRFToken=session.get('CSRFToken'))
+
+@app.route('/resend/', methods=['GET', 'POST'])
+def resend():
+    email = request.args.get('email')
+    if request.method == 'POST':
+        msg = Message(subject='OTP', sender='bakes.tisbakery@gmail.com', recipients=[email])
+        msg.body = str(otp)
+        mail.send(msg)
+    return redirect(url_for('validate'))
 
 
 @app.route('/analyst_login', methods=['POST', 'GET'])
@@ -173,11 +218,12 @@ def analyst_login():
 def login():
     users = mongo.db.users
     logs = mongo.db.logs
+
     if session.get('analyst_logged_in'):
         return redirect(url_for("home"))
     if request.method == 'POST':
         login_user = users.find_one({'email': request.form['email']})
-        if login_user:
+        if login_user and login_user['verified'] == 1:
             if bcrypt.hashpw(request.form['password'].encode('utf-8'), login_user['password']) == login_user[
                 'password']:
                 time_in = "UTC " + datetime.now().strftime("%X")
@@ -194,6 +240,8 @@ def login():
             flash('Email does not exist', category='error')
 
     return render_template("login.html", boolean=True, CSRFToken=session.get('CSRFToken'))
+
+
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -239,7 +287,8 @@ def analyst():
         log_arr.append(str(i['login_time']))
         log_big_arr.append(log_arr)
         log_arr = []
-    return render_template("data_analyst_page.html", log_big_arr=log_big_arr, order_big_arr=order_big_arr, CSRFToken=session.get('CSRFToken'))
+    return render_template("data_analyst_page.html", log_big_arr=log_big_arr, order_big_arr=order_big_arr,
+                           CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/account/')
@@ -251,7 +300,8 @@ def account():
     name = user['name']
     address = user['address']
     mobile = user['mobile']
-    return render_template("account_page.html", name=name, address=address, mobile=mobile, CSRFToken=session.get('CSRFToken'))
+    return render_template("account_page.html", name=name, address=address, mobile=mobile,
+                           CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/edit_account/', methods=['GET', 'POST'])
@@ -303,7 +353,7 @@ def cart():
 
     userCart = mongo.db.cart
     cart = userCart.find({ 'user_id': clean_userId})
-    
+
     return render_template("cart.html", users=userId, userCart=cart, CSRFToken=session.get('CSRFToken'))
 
 
@@ -323,24 +373,24 @@ def allproducts():
 def showgood(id):
     if 'email' not in session:
         product = mongo.db.products
-        retrieve_product = product.find_one({'product_id':id})
+        retrieve_product = product.find_one({'product_id': id})
         return render_template("indiv_product.html", product=retrieve_product, CSRFToken=session.get('CSRFToken'))
     else:
         product = mongo.db.products
-        retrieve_product = product.find_one({'product_id':id})
+        retrieve_product = product.find_one({'product_id': id})
         session['product_id'] = id
         return render_template("indiv_product.html", product=retrieve_product, CSRFToken=session.get('CSRFToken'))
-        
+
 
 @app.route('/addToCart', methods=['GET', 'POST'])
 @user_login_required
 def addToCart():
-    #connecting to tables
+    # connecting to tables
     allproducts = mongo.db.products
     users = mongo.db.users
     userCart = mongo.db.cart
 
-    #Retrieving and cleaning user ID based on email stored in session
+    # Retrieving and cleaning user ID based on email stored in session
     findproduct = allproducts.find()
     user_email = session['email']
     userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
@@ -358,11 +408,11 @@ def addToCart():
     C_productName = str(productName).replace("{'product_name': '", "").replace("'}", '')
     productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
     C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
-    
+
     #check if product has already been added into the cart
     if userCart.count_documents({'user_id': clean_userId}) == 0 and userCart.count_documents({'product_id': productId}) == 0:
         userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
-    
+
     elif userCart.count_documents({'user_id': clean_userId}) != 0 and userCart.count_documents({'product_id': productId}) == 0:
         userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
     #Update quantity if product is in cart
@@ -412,10 +462,10 @@ def checkout():
     if cart.count_documents({'user_id': loginuserid}) == 0:
         flash("Cart is empty!", category='error')
         return redirect(url_for('home'))
-    else:       
+    else:
         #find totalamount for each user in cartdb
         price = cart.aggregate([{"$group":{"_id":"$user_id","totalAmount": {"$sum":{"$multiply":["$product_price", "$product_quantity"]}}, "count":{"$sum":"1"}}}])
-        
+
         #Clean retrieved cart
         strOrderDetails = str(list(price))
 
@@ -441,19 +491,17 @@ def checkout():
             for productdetail in allproducts_details:
                 #extract prod_id and quantity value only and clean
                 productdetailStr = str(productdetail)
-                productdetailStr1 = re.findall(r'\w+', productdetailStr)
-                productdetailStr2 = ' '.join(productdetailStr1)
-                productdetailStr3 = re.sub('product_id ', '', productdetailStr2)
-                productdetailStr4 = re.sub(' product_quantity', '', productdetailStr3)
-                variables = productdetailStr4.split( )
+                clean_productdetail = productdetailStr.replace("{'product_id': '", "")
+                clean_productdetail1 = clean_productdetail.replace("', 'product_quantity':", "")
+                clean_productdetail2 = clean_productdetail1.replace("}", "")
 
                 #split prod_id and quantity into 2 value for prepratation of insertion into order db
-                for prodid,quantity in zip(variables[0::2], variables[1::2]):                    
+                for prodid,quantity in zip(variables[0::2], variables[1::2]):
                     #insert user_id, name and totalprice into order db
                     order.insert_one({'user_id':userid,'name': clean_username1,'total_amount': total,
                      "order_time": datetime.now(),
                      'order': {'product_id': prodid, 'product_quantity': quantity}})
-                    
+
                     #find price_id
                     retrieve_priceid = product.find({'product_id':prodid},{'price_id':1, '_id':0})
                     for priceid in retrieve_priceid:
