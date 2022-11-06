@@ -350,10 +350,19 @@ def addToCart():
     productPrice = allproducts.find_one({'product_id':productId}, { '_id': 0, 'product_price': 1})
     C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
     productPrice = int(C_productPrice)
-    
-    
-    #Insert into DB
-    userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': productPrice, 'product_quantity': int(quantity)})
+
+    #check if product has already been added into the cart
+    if userCart.count_documents({'user_id': clean_userId}) and userCart.count_documents({'product_id': productId}) == 0:
+        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': productPrice, 'product_quantity': int(quantity)})
+    #Update quantity if product is in cart
+    else:
+        currentQuantity = userCart.find_one({'user_id': clean_userId, 'product_id': productId}, { '_id': 0, 'product_quantity': 1})
+        C_currentQuantity = str(currentQuantity).replace("{'product_quantity': ", "").replace("}", '')
+        updatedQuantity = (int(quantity) + int(C_currentQuantity))
+        if updatedQuantity > 50:
+            flash("Sorry! There is a purchase limit of 50 per product!")
+        else:
+            userCart.update_one({'user_id': clean_userId, 'product_id': productId}, {'$set' : {'product_quantity': updatedQuantity}})
     return render_template("all_products.html", allproducts=findproduct, CSRFToken=session.get('CSRFToken'))
 
 
