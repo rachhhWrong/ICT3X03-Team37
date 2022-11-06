@@ -21,7 +21,8 @@ app = Flask(__name__, template_folder='website/templates', static_folder='websit
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 # never send cookies to third-party sites
-app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
+# would prefer Strict, but it breaks navigating back from Stripe
+app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
 # There are more configs set for non-debug mode; see bottom of file
 
 mongo = auth.start_mongo_client(app)
