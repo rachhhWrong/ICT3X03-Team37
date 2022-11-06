@@ -351,6 +351,7 @@ def addToCart():
     C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
     productPrice = int(C_productPrice)
     
+    
     #Insert into DB
     userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': productPrice, 'product_quantity': int(quantity)})
     return render_template("all_products.html", allproducts=findproduct, CSRFToken=session.get('CSRFToken'))
@@ -372,22 +373,22 @@ def removeFromCart():
 
 
 @app.route('/checkout/')
+@user_login_required
 def checkout():
     user = mongo.db.users
     cart = mongo.db.cart
     order = mongo.db.orders
     product = mongo.db.products
 
-    if 'email' not in session:
-        flash("Please login first!", category='error')
-        return render_template("login.html")
-    else:
-        user_email = session['email']
-        userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
-        strUserId = str(userId)
-        loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
-        #loginuserid = "6364c1b91b3c2c688f6b73ab"
+    user_email = session['email']
+    userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
+    strUserId = str(userId)
+    loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
 
+    if cart.count_documents({'user_id': loginuserid}) == 0:
+        flash("Cart is empty!", category='error')
+        return redirect(url_for('home'))
+    else:
         #find totalamount for each user in cartdb
         price = cart.aggregate([{"$group":{"_id":"$user_id","totalAmount": {"$sum":{"$multiply":["$product_price", "$product_quantity"]}}, "count":{"$sum":"1"}}}])
 
@@ -492,3 +493,7 @@ else:
         app.config["PERMANENT_SESSION_LIFETIME"] = 900
         # require HTTPS to load cookies
         app.config["SESSION_COOKIE_SECURE"] = True
+
+#@app.errorhandler(500)
+#def internal_error(e):
+#    return render_template('home.html'), 500
