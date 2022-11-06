@@ -346,11 +346,12 @@ def cart():
     # Clean retrieved userId
     strUserId = str(userId)
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
-
+    clean_userId1 = clean_userId.replace("'), 'verified': 1}", "")
+    
     userCart = mongo.db.cart
-    cart = userCart.find({ 'user_id': clean_userId})
+    cart = userCart.find({ 'user_id': clean_userId1})
 
-    return render_template("cart.html", users=userId, userCart=cart, CSRFToken=session.get('CSRFToken'))
+    return render_template("cart.html", users=clean_userId1, userCart=cart, CSRFToken=session.get('CSRFToken'))
 
 
 @app.route('/about-us/')
@@ -392,6 +393,8 @@ def addToCart():
     userId = users.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
     strUserId = str(userId)
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
+    clean_userId1 = clean_userId.replace("'), 'verified': 1}", "")
+    
 
     #Get quantity of product to add
     quantity = request.form.get('quantity')
@@ -406,21 +409,21 @@ def addToCart():
     C_productPrice = str(productPrice).replace("{'product_price': ", "").replace("}", '')
 
     #check if product has already been added into the cart
-    if userCart.count_documents({'user_id': clean_userId}) == 0 and userCart.count_documents({'product_id': productId}) == 0:
-        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
+    if userCart.count_documents({'user_id': clean_userId1}) == 0 and userCart.count_documents({'product_id': productId}) == 0:
+        userCart.insert_one({'user_id':clean_userId1, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
 
-    elif userCart.count_documents({'user_id': clean_userId}) != 0 and userCart.count_documents({'product_id': productId}) == 0:
-        userCart.insert_one({'user_id':clean_userId, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
+    elif userCart.count_documents({'user_id': clean_userId1}) != 0 and userCart.count_documents({'product_id': productId}) == 0:
+        userCart.insert_one({'user_id':clean_userId1, 'product_id': productId, 'product_name': C_productName, 'product_price': int(C_productPrice), 'product_quantity': int(quantity)})
     #Update quantity if product is in cart
     else:
-        currentQuantity = userCart.find_one({'user_id': clean_userId, 'product_id': productId}, { '_id': 0, 'product_quantity': 1})
+        currentQuantity = userCart.find_one({'user_id': clean_userId1, 'product_id': productId}, { '_id': 0, 'product_quantity': 1})
         C_currentQuantity = str(currentQuantity).replace("{'product_quantity': ", "").replace("}", '')
         updatedQuantity = (int(quantity) + int(C_currentQuantity))
 
         if updatedQuantity > 50:
             flash("Sorry! There is a purchase limit of 50 per product!")
         else:
-            userCart.update_one({'user_id': clean_userId, 'product_id': productId}, {'$set' : {'product_quantity': updatedQuantity}})
+            userCart.update_one({'user_id': clean_userId1, 'product_id': productId}, {'$set' : {'product_quantity': updatedQuantity}})
             flash("Added item successfully!")
     return render_template("all_products.html", allproducts=findproduct, CSRFToken=session.get('CSRFToken'))
 
@@ -435,8 +438,9 @@ def removeFromCart():
                             {'_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0})
     strUserId = str(userId)
     clean_userId = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
+    clean_userId1 = clean_userId.replace("'), 'verified': 1}", "")
     productId = request.args.get('productId')
-    userCart.delete_one({'user_id': clean_userId, 'product_id': productId})
+    userCart.delete_one({'user_id': clean_userId1, 'product_id': productId})
     return redirect(url_for('cart'))
 
 
