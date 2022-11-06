@@ -9,7 +9,6 @@ from random import randint
 from flask_mail import Mail, Message
 
 from website import auth
-from website.models import *
 from functools import wraps
 import os
 import bcrypt
