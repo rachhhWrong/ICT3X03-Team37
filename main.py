@@ -171,16 +171,13 @@ def validate():
     otp_check.append(otp)
     mail.send(msg)
     users = mongo.db.users
-    user = users.find_one({"email": email})
-    #d_email = urllib.parse.unquote(email)
+
     if request.method == 'POST':
         user_otp = request.form['otp']
         if otp_check[0] == int(user_otp):
-            if user:
-                users.update_one({'email': email}, {'$set': {'verified': 1}})
-                flash('Account validated!', category='success')
-                return redirect(url_for('home'))
-
+            users.update_one({'email': email}, {'$set': {'verified': 1}})
+            flash('Account validated!', category='success')
+            return redirect(url_for('home'))
 
     return render_template("validate.html", CSRFToken=session.get('CSRFToken'))
 
