@@ -395,7 +395,6 @@ def checkout():
         userId = user.find_one( { 'email': user_email }, { '_id': 1, 'name': 0, 'email': 0, 'password': 0, 'address': 0, 'mobile': 0 })
         strUserId = str(userId)
         loginuserid = strUserId.replace("{'_id': ObjectId('", "").replace("')}", '')
-        #loginuserid = "6364c1b91b3c2c688f6b73ab"
 
         #find totalamount for each user in cartdb
         price = cart.aggregate([{"$group":{"_id":"$user_id","totalAmount": {"$sum":{"$multiply":["$product_price", "$product_quantity"]}}, "count":{"$sum":"1"}}}])
@@ -449,12 +448,9 @@ def checkout():
                         productslist["price"]=clean_priceid1
                         productslist["quantity"]=quantity
 
-                    line_items1.append(productslist)
-                    flash(line_items1)
+                        line_items1.append(productslist)
+                    
                 try:
-                        #productslist = {'price': 'price_1LzHWUDkn7CDktELXGaYF398', 'quantity': '1', }
-                        #productslist1 = {'price': 'price_1M0R2BDkn7CDktELlg1CQOGi', 'quantity': '2'}
-
                     checkout_session = stripe.checkout.Session.create(
                     line_items=line_items1,
                     mode='payment',
