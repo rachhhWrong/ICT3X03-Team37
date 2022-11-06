@@ -264,6 +264,7 @@ else:
     # deployment mode settings
     from random import SystemRandom
     import string
+    from asgiref.wsgi import WsgiToAsgi
 
     if skey := os.environ.get("SECRET_KEY", None):
         app.secret_key = skey
@@ -272,3 +273,7 @@ else:
         app.config["PERMANENT_SESSION_LIFETIME"] = 900
         # require HTTPS to load cookies
         app.config["SESSION_COOKIE_SECURE"] = True
+
+    # as we are using uvicorn+gunicorn for deployment
+    # flask (a WSGI framework) must be adapted to ASGI
+    app = WsgiToAsgi(app)
