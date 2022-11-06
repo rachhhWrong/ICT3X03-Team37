@@ -22,6 +22,7 @@
                     class="text-black-50">{{ session['email'] }}</span><span> </span></div>
             <div class="mt-5 text-center">
                 <form method="post" action="{{ url_for('delete_account') }}">
+                    <input type="hidden" class="form-control" name="CSRFToken" value="{{ CSRFToken }}" readonly>
                     <button class="btn btn-primary profile-button" onclick="return confirm('Are you sure?')" type="submit" >Delete Profile</button>
                 </form>
 
@@ -63,6 +64,7 @@
                                placeholder="Password"
                                required="required"/>
                     </div>
+                    <input type="hidden" class="form-control" name="CSRFToken" value="{{ CSRFToken }}" readonly>
 
                     <p class="error error--hidden"></p>
                     <div>
